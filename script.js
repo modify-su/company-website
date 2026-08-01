@@ -1,0 +1,769 @@
+/* ===========================
+   script.js — NexGen Solutions
+   =========================== */
+
+// ===== NAVBAR SCROLL EFFECT =====
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 50) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+  }
+  updateActiveNav();
+  checkBackToTop();
+});
+
+// ===== ACTIVE NAV LINK =====
+function updateActiveNav() {
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+  let current = '';
+  sections.forEach(section => {
+    const top = section.offsetTop - 100;
+    if (window.scrollY >= top) current = section.getAttribute('id');
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === `#${current}`) link.classList.add('active');
+  });
+}
+
+// ===== HAMBURGER MENU =====
+const hamburger = document.getElementById('hamburger');
+const navLinks = document.getElementById('navLinks');
+hamburger.addEventListener('click', () => {
+  navLinks.classList.toggle('open');
+  const spans = hamburger.querySelectorAll('span');
+  if (navLinks.classList.contains('open')) {
+    spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+    spans[1].style.opacity = '0';
+    spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+  } else {
+    spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+  }
+});
+navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+  navLinks.classList.remove('open');
+  const spans = hamburger.querySelectorAll('span');
+  spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+}));
+
+// ===== PARTICLE CANVAS =====
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let animFrame;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 2 + 0.5;
+    this.speedX = (Math.random() - 0.5) * 0.3;
+    this.speedY = (Math.random() - 0.5) * 0.3;
+    this.opacity = Math.random() * 0.5 + 0.1;
+    this.color = Math.random() > 0.5 ? '#7c3aed' : '#3b82f6';
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+  }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.opacity;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function initParticles() {
+  particles = [];
+  for (let i = 0; i < 80; i++) particles.push(new Particle());
+}
+
+function drawConnections() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 120) {
+        ctx.save();
+        ctx.globalAlpha = (1 - dist / 120) * 0.12;
+        ctx.strokeStyle = '#7c3aed';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  drawConnections();
+  animFrame = requestAnimationFrame(animate);
+}
+initParticles();
+animate();
+
+// ===== COUNTER ANIMATION =====
+const statNums = document.querySelectorAll('.stat-num');
+let counted = false;
+function animateCounters() {
+  if (counted) return;
+  const heroSection = document.getElementById('home');
+  const rect = heroSection.getBoundingClientRect();
+  if (rect.bottom > 0 && rect.top < window.innerHeight) {
+    counted = true;
+    statNums.forEach(el => {
+      const target = parseInt(el.dataset.target);
+      const duration = 2000;
+      const step = target / (duration / 16);
+      let current = 0;
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) { current = target; clearInterval(timer); }
+        el.textContent = Math.floor(current);
+      }, 16);
+    });
+  }
+}
+window.addEventListener('scroll', animateCounters);
+animateCounters();
+
+// ===== AOS (ANIMATE ON SCROLL) =====
+function initAOS() {
+  const elements = document.querySelectorAll('[data-aos]');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const delay = parseInt(entry.target.dataset.delay || 0);
+        setTimeout(() => entry.target.classList.add('animate'), delay);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+  elements.forEach(el => observer.observe(el));
+}
+initAOS();
+
+// ===== TESTIMONIALS SLIDER =====
+const track = document.getElementById('testimTrack');
+const dotsContainer = document.getElementById('sliderDots');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const cards = track.querySelectorAll('.testimonial-card');
+let currentSlide = 0;
+let autoSlide;
+
+cards.forEach((_, i) => {
+  const dot = document.createElement('button');
+  dot.className = 'dot' + (i === 0 ? ' active' : '');
+  dot.setAttribute('aria-label', `สไลด์ ${i + 1}`);
+  dot.addEventListener('click', () => goTo(i));
+  dotsContainer.appendChild(dot);
+});
+
+function goTo(n) {
+  currentSlide = (n + cards.length) % cards.length;
+  track.style.transform = `translateX(-${currentSlide * 100}%)`;
+  dotsContainer.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+}
+
+prevBtn.addEventListener('click', () => { goTo(currentSlide - 1); resetAuto(); });
+nextBtn.addEventListener('click', () => { goTo(currentSlide + 1); resetAuto(); });
+
+function startAuto() { autoSlide = setInterval(() => goTo(currentSlide + 1), 5000); }
+function resetAuto() { clearInterval(autoSlide); startAuto(); }
+startAuto();
+
+// ===== PORTFOLIO FILTER =====
+const filterBtns = document.querySelectorAll('.filter-btn');
+const portfolioItems = document.querySelectorAll('.portfolio-item');
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.filter;
+    portfolioItems.forEach(item => {
+      const show = filter === 'all' || item.dataset.category === filter;
+      item.style.opacity = show ? '1' : '0';
+      item.style.transform = show ? 'scale(1)' : 'scale(0.9)';
+      item.style.pointerEvents = show ? 'all' : 'none';
+      item.style.transition = 'all 0.4s ease';
+    });
+  });
+});
+
+// ===== CONTACT FORM =====
+const contactForm = document.getElementById('contactForm');
+const formSuccess = document.getElementById('formSuccess');
+contactForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const btn = contactForm.querySelector('button[type="submit"]');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<span>กำลังส่ง...</span>';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    contactForm.reset();
+    formSuccess.classList.add('show');
+    setTimeout(() => formSuccess.classList.remove('show'), 5000);
+  }, 1500);
+});
+
+// ===== NEWSLETTER FORM =====
+const newsletterForm = document.getElementById('newsletterForm');
+newsletterForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const input = document.getElementById('newsletterEmail');
+  const btn = newsletterForm.querySelector('button');
+  btn.textContent = '✓';
+  btn.style.background = '#10b981';
+  setTimeout(() => {
+    btn.textContent = '→';
+    btn.style.background = '';
+    input.value = '';
+  }, 2000);
+});
+
+// ===== BACK TO TOP =====
+const backToTop = document.getElementById('backToTop');
+function checkBackToTop() {
+  backToTop.classList.toggle('visible', window.scrollY > 400);
+}
+backToTop.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ===== SMOOTH HOVER CARD TILT =====
+document.querySelectorAll('.service-card, .team-card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 10;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -10;
+    card.style.transform = `translateY(-8px) rotateX(${y}deg) rotateY(${x}deg)`;
+    card.style.transformStyle = 'preserve-3d';
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+    card.style.transformStyle = '';
+  });
+});
+
+// ===== CURSOR GLOW EFFECT =====
+const cursorGlow = document.createElement('div');
+cursorGlow.style.cssText = `
+  position: fixed; pointer-events: none; z-index: 9999;
+  width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  transition: left 0.15s ease, top 0.15s ease;
+`;
+document.body.appendChild(cursorGlow);
+document.addEventListener('mousemove', (e) => {
+  cursorGlow.style.left = e.clientX + 'px';
+  cursorGlow.style.top = e.clientY + 'px';
+});
+
+console.log('%c🚀 NexGen Solutions', 'color: #7c3aed; font-size: 20px; font-weight: bold;');
+console.log('%cBuilt with ❤️ by NexGen Dev Team', 'color: #3b82f6; font-size: 12px;');
+
+/* ============================================================
+   ADMIN DATA SYNC — Reads from localStorage (set by admin panel)
+   ============================================================ */
+const SITE_KEY = 'nxg_site_data';
+
+function getSiteData() {
+  try {
+    const s = localStorage.getItem(SITE_KEY);
+    if(s) return JSON.parse(s);
+    return window.CONFIG_DATA || null;
+  } catch(e) { return window.CONFIG_DATA || null; }
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function grad(s,e) { return `linear-gradient(135deg,${s} 0%,${e} 100%)`; }
+
+// --- Apply Logo ---
+function applyLogo(logo) {
+  if(!logo) return;
+  document.querySelectorAll('.nav-logo').forEach(el => {
+    if(logo.image) {
+      el.innerHTML = `<img src="${logo.image}" style="height:36px;max-width:140px;object-fit:contain;"><span class="logo-text" style="margin-left:10px">${esc(logo.text)}<span class="logo-accent">${esc(logo.accent)}</span></span>`;
+    } else {
+      const firstChar = (logo.text||'N')[0];
+      el.querySelector('.logo-text') && (el.querySelector('.logo-text').innerHTML = `${esc(logo.text)}<span class="logo-accent">${esc(logo.accent)}</span>`);
+    }
+  });
+  document.title = `${logo.text}${logo.accent} | บริษัทเทคโนโลยีชั้นนำ`;
+}
+
+// --- Apply Hero ---
+function applyHero(hero) {
+  if(!hero) return;
+  const badge = document.querySelector('.hero-badge span:last-child');
+  if(badge) badge.textContent = hero.badge||'';
+  const title = document.querySelector('.hero-title');
+  if(title) title.innerHTML = `${esc(hero.title1||'')}<br/><span class="gradient-text">${esc(hero.title2||'')}</span><br/>${esc(hero.title3||'')}`;
+  const sub = document.querySelector('.hero-subtitle');
+  if(sub) sub.innerHTML = (hero.subtitle||'').replace(/\n/g,'<br/>');
+  const btns = document.querySelectorAll('.hero-actions .btn');
+  if(btns[0] && hero.cta1) btns[0].querySelector('span') && (btns[0].querySelector('span').textContent = hero.cta1);
+  if(btns[1] && hero.cta2) btns[1].querySelector('span') && (btns[1].querySelector('span').textContent = hero.cta2);
+  // Stats
+  if(hero.stats && hero.stats.length) {
+    const statsEl = document.querySelector('.hero-stats');
+    if(statsEl) {
+      statsEl.innerHTML = hero.stats.map((s,i) => `
+        ${i>0?'<div class="stat-divider"></div>':''}
+        <div class="stat">
+          <span class="stat-num" data-target="${s.num}">0</span><span class="stat-unit">${esc(s.unit)}</span>
+          <span class="stat-label">${esc(s.label)}</span>
+        </div>`).join('');
+      // Re-run counter
+      counted = false;
+      animateCounters();
+    }
+  }
+}
+
+// --- Apply About ---
+function applyAbout(about) {
+  if(!about) return;
+  const section = document.getElementById('about');
+  const container = document.querySelector('#about .container');
+  const grid = document.querySelector('.about-grid');
+  const content = document.querySelector('.about-content');
+
+  if(section) {
+    // 1. Text Alignment
+    const align = about.textAlign || 'left';
+    section.style.textAlign = align;
+    if(content) content.style.textAlign = align;
+
+    // 2. Layout Direction & Column Ratio
+    if(grid) {
+      if(about.layout === 'vertical') {
+        grid.style.gridTemplateColumns = '1fr';
+        grid.style.gap = '40px';
+      } else {
+        grid.style.gap = '48px';
+        if(about.colRatio === 'wide') {
+          grid.style.gridTemplateColumns = '1fr 1.6fr';
+        } else if(about.colRatio === 'extra-wide') {
+          grid.style.gridTemplateColumns = '1fr 2.2fr';
+        } else if(about.colRatio === 'equal') {
+          grid.style.gridTemplateColumns = '1fr 1fr';
+        } else {
+          grid.style.gridTemplateColumns = '1.5fr 1fr'; // 60% ภาพ / 40% ข้อความ
+        }
+      }
+    }
+
+    // 3. Container Width (Standard / Wide / Full Width)
+    if(container) {
+      if(about.containerWidth === 'wide') {
+        container.style.maxWidth = '1400px';
+        container.style.width = '95%';
+      } else if(about.containerWidth === 'full') {
+        container.style.maxWidth = '100%';
+        container.style.width = '100%';
+        container.style.paddingLeft = '40px';
+        container.style.paddingRight = '40px';
+      } else {
+        container.style.maxWidth = '';
+        container.style.width = '';
+        container.style.paddingLeft = '';
+        container.style.paddingRight = '';
+      }
+    }
+
+    // 4. Font Size
+    if(content) {
+      if(about.fontSize === 'large') {
+        content.style.fontSize = '1.1rem';
+      } else if(about.fontSize === 'xlarge') {
+        content.style.fontSize = '1.25rem';
+      } else {
+        content.style.fontSize = '';
+      }
+    }
+  }
+
+  const titleEl = document.querySelector('.about-content .section-title');
+  if(titleEl) titleEl.innerHTML = `${esc(about.title||'')}<br/><span class="gradient-text">นวัตกรรมดิจิทัล</span>`;
+  const descEl = document.querySelector('.about-desc');
+  if(descEl) descEl.textContent = about.desc||'';
+  if(about.image) {
+    const img = document.querySelector('.about-img');
+    if(img) img.src = about.image;
+  }
+  const award = document.querySelector('.about-card-1 strong');
+  if(award && about.award) award.textContent = about.award;
+  const countries = document.querySelector('.about-card-2 strong');
+  if(countries && about.countries) countries.nextSibling && (document.querySelector('.about-card-2 span').textContent = `${about.countries} ประเทศ`);
+  if(about.features && about.features.length) {
+    const featContainer = document.querySelector('.about-features');
+    if(featContainer) {
+      const align = about.textAlign || 'left';
+      featContainer.innerHTML = about.features.map(f => `
+        <div class="feature-item" style="${align==='center'?'justify-content:center;text-align:center;':''}">
+          <div class="feature-icon">✓</div>
+          <div style="${align==='center'?'text-align:center;':''}"><strong>${esc(f.title)}</strong><p>${esc(f.desc)}</p></div>
+        </div>`).join('');
+    }
+  }
+}
+
+// --- Apply Services ---
+function applyServices(services) {
+  if(!services || !services.length) return;
+  const grid = document.querySelector('.services-grid');
+  if(!grid) return;
+  grid.innerHTML = services.map(s => `
+    <div class="service-card ${s.featured?'featured':''}">
+      ${s.featured?'<div class="service-badge">ยอดนิยม</div>':''}
+      <div class="service-icon-wrap" style="--clr:${esc(s.color)}">
+        <span style="font-size:1.6rem">${esc(s.icon||'🔧')}</span>
+      </div>
+      <h3>${esc(s.title)}</h3>
+      <p>${esc(s.desc)}</p>
+      <ul class="service-list">${(s.features||[]).map(f=>`<li>${esc(f)}</li>`).join('')}</ul>
+      <div class="service-arrow">→</div>
+    </div>`).join('');
+  // Re-apply tilt effect
+  document.querySelectorAll('.service-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 10;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * -10;
+      card.style.transform = `translateY(-8px) rotateX(${y}deg) rotateY(${x}deg)`;
+    });
+    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+  });
+}
+
+// --- Apply Portfolio ---
+function applyPortfolio(portfolio, categories) {
+  if(!portfolio || !portfolio.length) return;
+  // Update filter buttons
+  if(categories && categories.length) {
+    const filterEl = document.querySelector('.portfolio-filter');
+    if(filterEl) {
+      filterEl.innerHTML = categories.map((c,i) =>
+        `<button class="filter-btn ${i===0?'active':''}" data-filter="${esc(c.value)}">${esc(c.name)}</button>`
+      ).join('');
+    }
+  }
+  // Update portfolio grid
+  const grid = document.querySelector('.portfolio-grid');
+  if(!grid) return;
+  grid.innerHTML = portfolio.map(p => {
+    const bg = p.image ? `background:${grad(p.gradStart,p.gradEnd)};` : `background:${grad(p.gradStart,p.gradEnd)};`;
+    return `
+      <div class="portfolio-item ${p.large?'large':''}" data-category="${esc(p.category)}">
+        <div class="portfolio-img" style="${bg}">
+          <div class="portfolio-overlay">
+            <h4>${esc(p.title)}</h4>
+            <p>${esc(p.tech)}</p>
+            <a href="#" class="portfolio-link">ดูโปรเจค →</a>
+          </div>
+          ${p.image
+            ? `<img src="${p.image}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.85">`
+            : `<div class="p-icon">${esc(p.icon||'🎯')}</div>`}
+        </div>
+      </div>`;
+  }).join('');
+  // Re-attach filter events
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      document.querySelectorAll('.portfolio-item').forEach(item => {
+        const show = filter === 'all' || item.dataset.category === filter;
+        item.style.opacity = show ? '1' : '0';
+        item.style.transform = show ? 'scale(1)' : 'scale(0.9)';
+        item.style.pointerEvents = show ? 'all' : 'none';
+        item.style.transition = 'all 0.4s ease';
+      });
+    });
+  });
+}
+
+// --- Apply Team ---
+function applyTeam(team) {
+  if(!team || !team.length) return;
+  const grid = document.querySelector('.team-grid');
+  if(!grid) return;
+  grid.innerHTML = team.map(t => `
+    <div class="team-card">
+      <div class="team-avatar" style="background:${grad(t.gradStart,t.gradEnd)}">
+        ${t.image
+          ? `<img src="${t.image}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+          : `<span>${esc(t.avatar||t.name[0])}</span>`}
+      </div>
+      <h4>${esc(t.name)}</h4>
+      <p class="team-role">${esc(t.role)}</p>
+      <p class="team-bio">${esc(t.bio)}</p>
+      <div class="team-socials"><a href="#">in</a><a href="#">𝕏</a></div>
+    </div>`).join('');
+  // Re-apply tilt
+  document.querySelectorAll('.team-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 10;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * -10;
+      card.style.transform = `translateY(-8px) rotateX(${y}deg) rotateY(${x}deg)`;
+    });
+    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+  });
+}
+
+// --- Apply Testimonials ---
+function applyTestimonials(testimonials) {
+  if(!testimonials || !testimonials.length) return;
+  const track = document.getElementById('testimTrack');
+  if(!track) return;
+  track.innerHTML = testimonials.map(t => `
+    <div class="testimonial-card">
+      <div class="stars">${'★'.repeat(Math.min(5,t.rating||5))}</div>
+      <p>"${esc(t.text)}"</p>
+      <div class="testimonial-author">
+        <div class="author-avatar" style="background:${grad(t.gradStart,t.gradEnd)}">${esc(t.initial||t.author[0])}</div>
+        <div><strong>${esc(t.author)}</strong><span>${esc(t.position)}</span></div>
+      </div>
+    </div>`).join('');
+  // Re-init slider dots
+  const dotsEl = document.getElementById('sliderDots');
+  if(dotsEl) {
+    dotsEl.innerHTML = '';
+    testimonials.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.className = 'dot' + (i===0?' active':'');
+      dot.addEventListener('click', () => goTo(i));
+      dotsEl.appendChild(dot);
+    });
+  }
+}
+
+// --- Apply Custom Columns ---
+function applyColumns(columns) {
+  if(!columns || !columns.length) return;
+  const visible = columns.filter(c => c.visible !== false);
+  if(!visible.length) return;
+  const teamSection = document.getElementById('team');
+  if(!teamSection) return;
+  let colSection = document.getElementById('custom-columns-section');
+  if(!colSection) {
+    colSection = document.createElement('section');
+    colSection.id = 'custom-columns-section';
+    colSection.className = 'section';
+    colSection.style.cssText = 'background:var(--bg-2);padding:80px 0';
+    teamSection.parentNode.insertBefore(colSection, teamSection.nextSibling);
+  }
+  colSection.innerHTML = `<div class="container"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:32px">
+    ${visible.map(c => {
+      const align = c.textAlign || 'left';
+      return `
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,.05);text-align:${align}">
+        <h3 style="font-size:1.3rem;font-weight:800;margin-bottom:16px;color:var(--text)">${esc(c.title)}</h3>
+        ${c.image?`<img src="${c.image}" style="width:100%;border-radius:12px;margin-bottom:16px;object-fit:cover;max-height:240px">` : ''}
+        <div style="color:var(--text-muted);font-size:.92rem;line-height:1.8;text-align:${align}">${c.content||''}</div>
+      </div>`;
+    }).join('')}
+  </div></div>`;
+}
+
+// --- Apply Contact ---
+function applyContact(contact) {
+  if(!contact) return;
+  const items = document.querySelectorAll('.contact-item');
+  const fields = [contact.address, contact.phone, contact.email, contact.hours];
+  items.forEach((item, i) => {
+    if(fields[i]) {
+      const p = item.querySelector('p');
+      if(p) p.innerHTML = fields[i].replace(/\n/g,'<br>');
+    }
+  });
+}
+
+// --- Apply Theme & Colors ---
+function applyTheme(t) {
+  if(!t) return;
+  const root = document.documentElement.style;
+  if(t.primaryColor) {
+    root.setProperty('--primary', t.primaryColor);
+    root.setProperty('--primary-light', t.primaryColor);
+  }
+  if(t.gradStart && t.gradEnd) {
+    const mid = t.gradMiddle || t.gradEnd;
+    root.setProperty('--gradient', `linear-gradient(135deg, ${t.gradStart} 0%, ${t.gradEnd} 100%)`);
+    root.setProperty('--gradient-text', `linear-gradient(135deg, ${t.gradStart} 0%, ${mid} 50%, ${t.gradEnd} 100%)`);
+  }
+  
+  // Background & Text Theme
+  if(t.bgTheme === 'dark') {
+    root.setProperty('--bg', '#0f0c1b');
+    root.setProperty('--bg-2', '#18142b');
+    root.setProperty('--text', '#f8fafc');
+    root.setProperty('--text-muted', '#94a3b8');
+    root.setProperty('--surface', 'rgba(255,255,255,0.05)');
+    root.setProperty('--border', 'rgba(255,255,255,0.1)');
+  } else if(t.bgTheme === 'midnight') {
+    root.setProperty('--bg', '#0b1329');
+    root.setProperty('--bg-2', '#111c38');
+    root.setProperty('--text', '#f8fafc');
+    root.setProperty('--text-muted', '#94a3b8');
+    root.setProperty('--surface', 'rgba(255,255,255,0.05)');
+    root.setProperty('--border', 'rgba(255,255,255,0.1)');
+  } else if(t.bgTheme === 'soft') {
+    root.setProperty('--bg', '#faf8f5');
+    root.setProperty('--bg-2', '#f3efe6');
+    root.setProperty('--text', '#1c1917');
+    root.setProperty('--text-muted', '#57534e');
+    root.setProperty('--surface', 'rgba(0,0,0,0.03)');
+    root.setProperty('--border', 'rgba(0,0,0,0.08)');
+  } else if(t.bgTheme === 'light') {
+    root.setProperty('--bg', '#ffffff');
+    root.setProperty('--bg-2', '#f8f7ff');
+    root.setProperty('--text', '#0f0a1e');
+    root.setProperty('--text-muted', '#4b5563');
+    root.setProperty('--surface', 'rgba(124,58,237,0.04)');
+    root.setProperty('--border', 'rgba(124,58,237,0.12)');
+  } else if(t.bgTheme === 'custom') {
+    if(t.bgColor) root.setProperty('--bg', t.bgColor);
+    if(t.textColor) root.setProperty('--text', t.textColor);
+  }
+}
+
+// --- Apply Full 1-Column Banner Slider ---
+let currentBannerIdx = 0;
+let bannerTimer = null;
+
+function applySlider(slider) {
+  const section = document.getElementById('bannerSliderSection');
+  if(!slider || !slider.length) {
+    if(section) section.style.display = 'none';
+    return;
+  }
+  if(section) section.style.display = 'block';
+  const track = document.getElementById('mainBannerTrack');
+  const dotsEl = document.getElementById('bannerDots');
+  if(!track) return;
+  
+  track.innerHTML = slider.map(s => {
+    const bgImg = s.image || 'tech_banner_1.jpg';
+    return `
+      <div class="banner-slide-item">
+        <img src="${bgImg}" alt="${esc(s.title)}" class="banner-slide-bg" />
+        <div class="banner-slide-overlay"></div>
+        <div class="banner-slide-content">
+          ${s.badge ? `<div class="banner-slide-badge">${esc(s.badge)}</div>` : ''}
+          <h2 class="banner-slide-title">${esc(s.title)}</h2>
+          ${s.desc ? `<p class="banner-slide-desc">${esc(s.desc)}</p>` : ''}
+          <a href="${esc(s.link || '#')}" class="btn btn-primary">${esc(s.btnText || 'ดูข้อมูลเพิ่มเติม →')}</a>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Setup dots
+  if(dotsEl) {
+    dotsEl.innerHTML = slider.map((_, i) =>
+      `<button class="banner-dot ${i===0?'active':''}" onclick="goToBannerSlide(${i})"></button>`
+    ).join('');
+  }
+
+  // Setup Arrows
+  const prevBtn = document.getElementById('bannerPrevBtn');
+  const nextBtn = document.getElementById('bannerNextBtn');
+  if(prevBtn) prevBtn.onclick = () => moveBannerSlide(-1);
+  if(nextBtn) nextBtn.onclick = () => moveBannerSlide(1);
+
+  // Start Autoplay
+  startBannerAutoplay(slider.length);
+}
+
+function goToBannerSlide(idx) {
+  const track = document.getElementById('mainBannerTrack');
+  const dots = document.querySelectorAll('.banner-dot');
+  if(!track) return;
+  const total = dots.length;
+  if(total === 0) return;
+
+  currentBannerIdx = (idx + total) % total;
+  track.style.transform = `translateX(-${currentBannerIdx * 100}%)`;
+
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', i === currentBannerIdx);
+  });
+}
+
+function moveBannerSlide(step) {
+  const dots = document.querySelectorAll('.banner-dot');
+  goToBannerSlide(currentBannerIdx + step);
+  startBannerAutoplay(dots.length);
+}
+
+function startBannerAutoplay(total) {
+  if(bannerTimer) clearInterval(bannerTimer);
+  if(total <= 1) return;
+  bannerTimer = setInterval(() => {
+    goToBannerSlide(currentBannerIdx + 1);
+  }, 4500);
+}
+
+// --- MASTER LOAD FUNCTION ---
+function loadSiteData() {
+  const data = getSiteData();
+  if(!data) return;
+  if(data.theme) applyTheme(data.theme);
+  if(data.logo) applyLogo(data.logo);
+  if(data.hero) applyHero(data.hero);
+  if(data.slider) applySlider(data.slider);
+  if(data.about) applyAbout(data.about);
+  if(data.services) applyServices(data.services);
+  if(data.portfolio) applyPortfolio(data.portfolio, data.categories);
+  if(data.team) applyTeam(data.team);
+  if(data.testimonials) applyTestimonials(data.testimonials);
+  if(data.columns) applyColumns(data.columns);
+  if(data.contact) applyContact(data.contact);
+}
+
+// Run after DOM is ready
+if(document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadSiteData);
+} else {
+  loadSiteData();
+}
+
+// Real-time synchronization across open tabs & windows
+window.addEventListener('storage', (e) => {
+  if(e.key === SITE_KEY) {
+    loadSiteData();
+  }
+});
+

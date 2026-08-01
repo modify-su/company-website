@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ — NexGen Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Outfit',sans-serif;min-height:100vh;background:linear-gradient(135deg,#7c3aed 0%,#3b82f6 60%,#06b6d4 100%);display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden;position:relative}
+    .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+    .orb-1{width:500px;height:500px;background:rgba(255,255,255,0.1);top:-150px;left:-150px;animation:float 8s ease-in-out infinite}
+    .orb-2{width:400px;height:400px;background:rgba(255,255,255,0.08);bottom:-100px;right:-100px;animation:float 6s ease-in-out infinite reverse}
+    .orb-3{width:250px;height:250px;background:rgba(16,185,129,0.15);top:50%;left:50%;animation:float 10s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-20px) scale(1.05)}}
+    .particles{position:absolute;inset:0;pointer-events:none}
+    .card{background:rgba(255,255,255,0.97);backdrop-filter:blur(40px);border-radius:28px;padding:48px 44px;width:100%;max-width:440px;box-shadow:0 40px 100px rgba(0,0,0,0.25),0 0 0 1px rgba(255,255,255,0.5);position:relative;z-index:1;animation:slideUp .7s cubic-bezier(.34,1.56,.64,1) forwards}
+    @keyframes slideUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
+    .logo-wrap{text-align:center;margin-bottom:36px}
+    .logo-box{width:64px;height:64px;background:linear-gradient(135deg,#7c3aed,#3b82f6);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:900;color:#fff;margin:0 auto 16px;box-shadow:0 12px 32px rgba(124,58,237,0.35);animation:logoWiggle 3s ease-in-out infinite}
+    @keyframes logoWiggle{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
+    .logo-wrap h1{font-size:1.7rem;font-weight:900;color:#0f0a1e}
+    .logo-wrap h1 span{color:#7c3aed}
+    .logo-wrap p{font-size:.82rem;color:#9ca3af;margin-top:6px;font-weight:500;letter-spacing:.03em}
+    .error-box{display:none;background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:14px 18px;font-size:.85rem;color:#dc2626;margin-bottom:20px;align-items:center;gap:10px;font-weight:600}
+    .error-box.show{display:flex;animation:shake .45s ease}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+    .form-group{margin-bottom:20px}
+    .form-group label{display:block;font-size:.82rem;font-weight:700;color:#374151;margin-bottom:8px;letter-spacing:.02em}
+    .input-wrap{position:relative}
+    .input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1rem;pointer-events:none;color:#9ca3af;transition:.2s}
+    input[type=text],input[type=password]{width:100%;padding:13px 16px 13px 44px;border:2px solid #e5e7eb;border-radius:14px;font-family:'Outfit',sans-serif;font-size:.95rem;color:#0f0a1e;background:#f9fafb;transition:all .25s;outline:none}
+    input:focus{border-color:#7c3aed;background:#fff;box-shadow:0 0 0 4px rgba(124,58,237,0.12)}
+    input:focus+.input-icon,input:focus~.input-icon{color:#7c3aed}
+    input.err{border-color:#ef4444;background:#fff5f5}
+    .toggle-pw{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9ca3af;font-size:.85rem;user-select:none;transition:.2s}
+    .toggle-pw:hover{color:#7c3aed}
+    .btn-login{width:100%;padding:15px;background:linear-gradient(135deg,#7c3aed,#3b82f6);color:#fff;border:none;border-radius:14px;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;transition:all .35s;box-shadow:0 10px 28px rgba(124,58,237,0.32);letter-spacing:.02em;position:relative;overflow:hidden}
+    .btn-login::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,#9d6ef7,#60a5fa);opacity:0;transition:.3s}
+    .btn-login:hover::before{opacity:1}
+    .btn-login:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(124,58,237,0.42)}
+    .btn-login span{position:relative;z-index:1}
+    .btn-login:disabled{opacity:.7;pointer-events:none}
+    .divider{text-align:center;margin:24px 0;color:#e5e7eb;font-size:.8rem;position:relative}
+    .divider::before,.divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:#e5e7eb}
+    .divider::before{left:0}.divider::after{right:0}
+    .back-link{text-align:center;margin-top:24px;font-size:.83rem;color:#9ca3af}
+    .back-link a{color:#7c3aed;text-decoration:none;font-weight:700;transition:.2s}
+    .back-link a:hover{color:#6d28d9;text-decoration:underline}
+    .hint-box{background:linear-gradient(135deg,rgba(124,58,237,.06),rgba(59,130,246,.06));border:1px solid rgba(124,58,237,.15);border-radius:12px;padding:14px 16px;margin-bottom:24px;font-size:.8rem;color:#6b7280;line-height:1.7}
+    .hint-box strong{color:#7c3aed;display:block;margin-bottom:4px}
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="card">
+    <div class="logo-wrap">
+      <div class="logo-box">N</div>
+      <h1>NexGen<span>.</span></h1>
+      <p>ระบบจัดการหลังบ้าน · Admin Panel</p>
+    </div>
+
+    <div class="hint-box">
+      <strong>🔐 ข้อมูลเข้าสู่ระบบ</strong>
+      Username: <strong>admin</strong> &nbsp;|&nbsp; Password: <strong>admin</strong>
+    </div>
+
+    <div class="error-box" id="errorBox">
+      <span>🔒</span><span id="errorText">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่</span>
+    </div>
+
+    <form id="loginForm" autocomplete="off">
+      <div class="form-group">
+        <label for="uid">ชื่อผู้ใช้ (User ID)</label>
+        <div class="input-wrap">
+          <input type="text" id="uid" placeholder="กรอก Username" required autocomplete="username">
+          <span class="input-icon">👤</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="pwd">รหัสผ่าน (Password)</label>
+        <div class="input-wrap">
+          <input type="password" id="pwd" placeholder="กรอก Password" required autocomplete="current-password">
+          <span class="input-icon">🔑</span>
+          <span class="toggle-pw" id="togglePw" title="แสดง/ซ่อนรหัสผ่าน">👁</span>
+        </div>
+      </div>
+      <button type="submit" class="btn-login" id="loginBtn"><span id="btnText">🚀 เข้าสู่ระบบ</span></button>
+    </form>
+
+    <div class="back-link"><a href="../index.html">← กลับไปหน้าเว็บไซต์</a></div>
+  </div>
+
+  <script>
+    if (sessionStorage.getItem('nxg_admin_auth') === 'true') location.href = 'index.html';
+
+    const CREDS = { username: 'admin', password: 'admin' };
+
+    document.getElementById('togglePw').addEventListener('click', () => {
+      const inp = document.getElementById('pwd');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      document.getElementById('togglePw').textContent = inp.type === 'password' ? '👁' : '🙈';
+    });
+
+    ['uid','pwd'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        document.getElementById(id).classList.remove('err');
+        document.getElementById('errorBox').classList.remove('show');
+      });
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const u = document.getElementById('uid').value.trim();
+      const p = document.getElementById('pwd').value;
+      const btn = document.getElementById('loginBtn');
+      const txt = document.getElementById('btnText');
+
+      btn.disabled = true;
+      txt.textContent = '⏳ กำลังตรวจสอบ...';
+
+      setTimeout(() => {
+        if (u === CREDS.username && p === CREDS.password) {
+          sessionStorage.setItem('nxg_admin_auth', 'true');
+          sessionStorage.setItem('nxg_admin_user', u);
+          txt.textContent = '✅ เข้าสู่ระบบสำเร็จ!';
+          btn.style.background = 'linear-gradient(135deg,#059669,#10b981)';
+          setTimeout(() => location.href = 'index.html', 600);
+        } else {
+          btn.disabled = false;
+          txt.textContent = '🚀 เข้าสู่ระบบ';
+          document.getElementById('errorBox').classList.add('show');
+          ['uid','pwd'].forEach(id => document.getElementById(id).classList.add('err'));
+          document.getElementById('pwd').value = '';
+          setTimeout(() => {
+            document.getElementById('errorBox').classList.remove('show');
+            ['uid','pwd'].forEach(id => document.getElementById(id).classList.remove('err'));
+          }, 4000);
+        }
+      }, 900);
+    });
+  </script>
+</body>
+</html>

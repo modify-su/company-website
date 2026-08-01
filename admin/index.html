@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — NexGen Solutions</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon" id="sidebarLogoIcon">N</div>
+      <div>
+        <div class="sidebar-logo-name" id="sidebarLogoName">NexGen.</div>
+        <div class="sidebar-logo-sub">Admin Panel</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">ภาพรวม</div>
+      <div class="nav-item active" data-section="dashboard"><span class="icon">📊</span><span class="label">Dashboard</span></div>
+
+      <div class="nav-group-label" style="margin-top:10px">เนื้อหา</div>
+      <div class="nav-item" data-section="logo"><span class="icon">🎨</span><span class="label">โลโก้และแบรนด์</span></div>
+      <div class="nav-item" data-section="hero"><span class="icon">🏠</span><span class="label">Hero Section</span></div>
+      <div class="nav-item" data-section="slider"><span class="icon">🖼️</span><span class="label">สไลด์ภาพ Banner</span></div>
+      <div class="nav-item" data-section="about"><span class="icon">🏢</span><span class="label">เกี่ยวกับเรา</span></div>
+
+      <div class="nav-group-label" style="margin-top:10px">จัดการข้อมูล</div>
+      <div class="nav-item" data-section="services"><span class="icon">🛠</span><span class="label">บริการ</span></div>
+      <div class="nav-item" data-section="categories"><span class="icon">🏷</span><span class="label">หมวดหมู่</span></div>
+      <div class="nav-item" data-section="portfolio"><span class="icon">🖼</span><span class="label">ผลงาน</span></div>
+      <div class="nav-item" data-section="team"><span class="icon">👥</span><span class="label">ทีมงาน</span></div>
+      <div class="nav-item" data-section="testimonials"><span class="icon">⭐</span><span class="label">รีวิว</span></div>
+      <div class="nav-item" data-section="columns"><span class="icon">📋</span><span class="label">คอลัมน์เนื้อหา</span></div>
+
+      <div class="nav-group-label" style="margin-top:10px">ตั้งค่า</div>
+      <div class="nav-item" data-section="theme"><span class="icon">🎨</span><span class="label">ธีมและสีเว็บไซต์</span></div>
+      <div class="nav-item" data-section="contact"><span class="icon">📞</span><span class="label">ข้อมูลติดต่อ</span></div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">🚪 ออกจากระบบ</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <div class="header-title" id="headerTitle">Dashboard</div>
+        <div class="header-breadcrumb">NexGen Solutions Admin</div>
+      </div>
+      <div class="header-right">
+        <a href="../index.html" target="_blank" class="btn btn-primary btn-sm">🌐 ดูเว็บไซต์</a>
+        <div class="header-user">
+          <div class="user-avatar">A</div>
+          <span id="adminUser">admin</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <div id="section-dashboard" class="admin-section active"></div>
+      <div id="section-logo" class="admin-section"></div>
+      <div id="section-hero" class="admin-section"></div>
+      <div id="section-slider" class="admin-section"></div>
+      <div id="section-about" class="admin-section"></div>
+      <div id="section-services" class="admin-section"></div>
+      <div id="section-categories" class="admin-section"></div>
+      <div id="section-portfolio" class="admin-section"></div>
+      <div id="section-team" class="admin-section"></div>
+      <div id="section-testimonials" class="admin-section"></div>
+      <div id="section-columns" class="admin-section"></div>
+      <div id="section-theme" class="admin-section"></div>
+      <div id="section-contact" class="admin-section"></div>
+    </main>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">แก้ไข</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn btn-primary" id="modalSaveBtn" onclick="modalSave()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <h3>ยืนยันการลบ?</h3>
+    <p id="confirmText">คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?</p>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" onclick="closeConfirm()">ยกเลิก</button>
+      <button class="btn btn-delete" id="confirmOkBtn">🗑 ลบเลย</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="admin.js"></script>
+</body>
+</html>
