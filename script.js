@@ -125,16 +125,16 @@ initParticles();
 animate();
 
 // ===== COUNTER ANIMATION =====
-const statNums = document.querySelectorAll('.stat-num');
 let counted = false;
 function animateCounters() {
   if (counted) return;
   const heroSection = document.getElementById('home');
+  if (!heroSection) return;
   const rect = heroSection.getBoundingClientRect();
   if (rect.bottom > 0 && rect.top < window.innerHeight) {
     counted = true;
-    statNums.forEach(el => {
-      const target = parseInt(el.dataset.target);
+    document.querySelectorAll('.stat-num').forEach(el => {
+      const target = parseInt(el.dataset.target) || 0;
       const duration = 2000;
       const step = target / (duration / 16);
       let current = 0;
@@ -169,26 +169,35 @@ const track = document.getElementById('testimTrack');
 const dotsContainer = document.getElementById('sliderDots');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
-const cards = track.querySelectorAll('.testimonial-card');
 let currentSlide = 0;
 let autoSlide;
 
-cards.forEach((_, i) => {
-  const dot = document.createElement('button');
-  dot.className = 'dot' + (i === 0 ? ' active' : '');
-  dot.setAttribute('aria-label', `สไลด์ ${i + 1}`);
-  dot.addEventListener('click', () => goTo(i));
-  dotsContainer.appendChild(dot);
-});
-
-function goTo(n) {
-  currentSlide = (n + cards.length) % cards.length;
-  track.style.transform = `translateX(-${currentSlide * 100}%)`;
-  dotsContainer.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+if (track && dotsContainer) {
+  const cards = track.querySelectorAll('.testimonial-card');
+  cards.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', `สไลด์ ${i + 1}`);
+    dot.addEventListener('click', () => goTo(i));
+    dotsContainer.appendChild(dot);
+  });
 }
 
-prevBtn.addEventListener('click', () => { goTo(currentSlide - 1); resetAuto(); });
-nextBtn.addEventListener('click', () => { goTo(currentSlide + 1); resetAuto(); });
+function goTo(n) {
+  if (!track) return;
+  const cardsCount = track.querySelectorAll('.testimonial-card').length;
+  if (!cardsCount) return;
+  currentSlide = (n + cardsCount) % cardsCount;
+  track.style.transform = `translateX(-${currentSlide * 100}%)`;
+  if (dotsContainer) {
+    dotsContainer.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+  }
+}
+
+if (prevBtn && nextBtn) {
+  prevBtn.addEventListener('click', () => { goTo(currentSlide - 1); resetAuto(); });
+  nextBtn.addEventListener('click', () => { goTo(currentSlide + 1); resetAuto(); });
+}
 
 function startAuto() { autoSlide = setInterval(() => goTo(currentSlide + 1), 5000); }
 function resetAuto() { clearInterval(autoSlide); startAuto(); }
