@@ -843,7 +843,7 @@ function renderGallery(){
 function editGalleryItem(id){
   const d = getData();
   if(!d.gallery) d.gallery = [];
-  const g = id ? d.gallery.find(x => x.id === id) : { id: null, title: '', date: '', desc: '', image: '', photos: [] };
+  const g = id ? d.gallery.find(x => x.id === id) : { id: null, title: '', date: '', desc: '', image: '', externalUrl: '', photos: [] };
   if(!g) return;
 
   tempGalleryCover = g.image || null;
@@ -854,6 +854,7 @@ function editGalleryItem(id){
       <div class="form-group full"><label>ชื่ออัลบั้มภาพผลงาน / กิจกรรม *</label><input type="text" id="gTitle" value="${esc(g.title||'')}" placeholder="เช่น ภาพกิจกรรมลงพื้นที่ส่งเสริมนวัตกรรมดิจิทัล"></div>
       <div class="form-group full"><label>วันที่กิจกรรม / ผลงาน</label><input type="text" id="gDate" value="${esc(g.date||'')}" placeholder="06 สิงหาคม 2569"></div>
       <div class="form-group full"><label>คำอธิบายอัลบั้ม</label><textarea id="gDesc" rows="3" placeholder="รายละเอียดภาพกิจกรรมฉบับย่อ...">${esc(g.desc||'')}</textarea></div>
+      <div class="form-group full"><label>🔗 ลิงก์อัลบั้มเต็มภายนอก (Google Photos / Facebook Album Link)</label><input type="text" id="gExternalUrl" value="${esc(g.externalUrl||'')}" placeholder="https://photos.app.goo.gl/... (เมื่อกดดูเพิ่มเติม จะนำส่งไปที่นี่)"></div>
       
       <!-- Cover Photo -->
       <div class="form-group full" style="background:#f8fafc;padding:16px;border-radius:10px;border:1px solid #e2e8f0">
@@ -871,17 +872,17 @@ function editGalleryItem(id){
       <!-- Album Photo Collection -->
       <div class="form-group full" style="background:#f0f9ff;padding:16px;border-radius:10px;border:1px solid #bae6fd;margin-top:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <label style="font-weight:700;color:#0369a1">📸 รูปภาพทั้งหมดในอัลบั้มนี้ (<span id="photoCountLabel">${tempGalleryPhotos.length}</span> รูป)</label>
+          <label style="font-weight:700;color:#0369a1">📸 รูปภาพตัวอย่างในอัลบั้มนี้ (<span id="photoCountLabel">${tempGalleryPhotos.length}</span> รูป)</label>
         </div>
 
         <div style="font-size:0.8rem;color:#334155;background:#e0f2fe;padding:8px 12px;border-radius:6px;margin-bottom:12px;line-height:1.4">
-          💡 <strong>เคล็ดลับการดึงลิงก์รูปภาพจาก Google Photos / Facebook:</strong><br>
-          ให้คลิกขวาที่รูปภาพ แล้วเลือก <strong style="color:#0284c7">"คัดลอกที่อยู่อิเมจ" (Copy Image Address)</strong> นำมาวางในช่องด้านล่างได้เลยครับ (สามารถวางหลายๆ ลิงก์พร้อมกันได้)
+          💡 <strong>เคล็ดลับการดึงรูปภาพจาก Google Photos / Facebook:</strong><br>
+          หากวางลิงก์อัลบั้มแชร์ (เช่น https://photos.app.goo.gl/...) ระบบจะ Auto-Extract ดึงรูปตัวอย่างมาให้อัตโนมัติเลยครับ
         </div>
 
         <div style="margin-bottom:10px;display:flex;gap:8px">
           <input type="file" id="gAddPhotoFile" accept="image/*" style="display:none">
-          <input type="text" id="gNewPhotoUrl" placeholder="วางลิงก์ที่อยู่อิเมจ (Copy Image Address) แล้วกดเพิ่ม" style="flex:1">
+          <input type="text" id="gNewPhotoUrl" placeholder="วางลิงก์ Google Photos Album หรือ ลิงก์รูปภาพแล้วกดเพิ่ม" style="flex:1">
           <button type="button" class="btn btn-secondary btn-sm" onclick="addPhotoUrlToAlbum()">+ เพิ่มด้วย URL</button>
           <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('gAddPhotoFile').click()">💻 เลือกไฟล์จากเครื่อง</button>
         </div>
@@ -937,6 +938,9 @@ async function addPhotoUrlToAlbum(){
 
   // Automatic Google Photos Shared Album Extractor
   if(rawText.includes('photos.app.goo.gl') || rawText.includes('photos.google.com/share')){
+    const extInp = document.getElementById('gExternalUrl');
+    if(extInp && !extInp.value) extInp.value = rawText;
+
     toast('⏳ กำลังดึงรูปภาพทั้งหมดจาก Google Photos Album...', 'info');
     try {
       const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(rawText);
@@ -1030,6 +1034,7 @@ function saveGalleryItem(id){
     title,
     date: document.getElementById('gDate').value.trim(),
     desc: document.getElementById('gDesc').value.trim(),
+    externalUrl: document.getElementById('gExternalUrl') ? document.getElementById('gExternalUrl').value.trim() : '',
     image: finalCover,
     photos: tempGalleryPhotos.length ? tempGalleryPhotos : [finalCover]
   };

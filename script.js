@@ -750,6 +750,12 @@ function openAlbumModal(idx) {
 
   const photos = (item.photos && item.photos.length) ? item.photos : [item.image || 'tech_banner_1.jpg'];
   currentAlbumPhotos = photos;
+  const extUrl = item.externalUrl || 'https://photos.app.goo.gl/58LAS8aZPES9GAjf9';
+
+  // Display max 7 photos in preview grid + 1 "ดูเพิ่มเติม" card
+  const MAX_PREVIEW = 7;
+  const showPhotos = photos.slice(0, MAX_PREVIEW);
+  const remainingCount = photos.length > MAX_PREVIEW ? (photos.length - MAX_PREVIEW) : 0;
 
   let overlay = document.getElementById('albumDetailOverlay');
   if(!overlay) {
@@ -769,10 +775,18 @@ function openAlbumModal(idx) {
         <span class="album-total-count">📷 รวมทั้งหมด ${photos.length} รูป</span>
         <h2 class="news-detail-title" style="margin-top:10px">${esc(item.title || 'อัลบั้มภาพผลงาน')}</h2>
         ${item.desc ? `<p style="font-size:0.95rem;color:#475569;margin-top:10px;line-height:1.6">${esc(item.desc)}</p>` : ''}
+        
+        ${extUrl ? `
+          <div style="margin-top:12px">
+            <a href="${extUrl}" target="_blank" rel="noopener" class="btn-external-album">
+              <span>🔗 เปิดดูรูปภาพทั้งหมดในอัลบั้มเต็ม (${photos.length} รูป) บน Google Photos / Facebook ↗</span>
+            </a>
+          </div>
+        ` : ''}
       </div>
 
       <div class="album-photo-grid">
-        ${photos.map((pUrl, pIdx) => `
+        ${showPhotos.map((pUrl, pIdx) => `
           <div class="album-photo-item" onclick="openPhotoViewer(${pIdx})">
             <img src="${pUrl}" referrerpolicy="no-referrer" alt="รูปที่ ${pIdx+1}" loading="lazy" />
             <div class="album-photo-overlay">
@@ -780,6 +794,15 @@ function openAlbumModal(idx) {
             </div>
           </div>
         `).join('')}
+
+        <!-- "ดูเพิ่มเติม" Card at the end of grid -->
+        <div class="album-photo-item album-more-card" onclick="openExternalAlbumLink('${esc(extUrl)}')">
+          <div class="album-more-overlay">
+            <span class="album-more-icon">🖼️</span>
+            <span class="album-more-title">ดูรูปภาพเพิ่มเติม</span>
+            <span class="album-more-sub">${remainingCount > 0 ? `+${remainingCount} รูป ` : ''}(เปิดอัลบั้มเต็ม) ↗</span>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -789,6 +812,11 @@ function openAlbumModal(idx) {
   overlay.onclick = (e) => {
     if(e.target === overlay) closeAlbumModal();
   };
+}
+
+function openExternalAlbumLink(url) {
+  const targetUrl = (url && url.trim()) ? url.trim() : 'https://photos.app.goo.gl/58LAS8aZPES9GAjf9';
+  window.open(targetUrl, '_blank');
 }
 
 function closeAlbumModal() {
