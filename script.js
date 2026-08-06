@@ -663,73 +663,180 @@ function applyTestimonials(testimonials) {
     });
   }
 }
-// --- Apply Gallery (รวมภาพผลงาน) ---
+// --- Apply Gallery (อัลบั้มภาพผลงาน & กิจกรรม) ---
 function applyGallery(gallery) {
   const grid = document.getElementById('galleryGrid');
   if(!grid) return;
-  const items = (gallery && gallery.length) ? gallery : [
-    { id: 'g1', title: 'ภาพกิจกรรมโครงการเกษตรดิจิทัล', date: '06 ส.ค. 2569', image: 'tech_banner_1.jpg', desc: 'บรรยากาศกิจกรรมการลงพื้นที่ส่งเสริมนวัตกรรมดิจิทัล' },
-    { id: 'g2', title: 'งานแสดงเทคโนโลยีและนวัตกรรมอาหารสัตว์', date: '05 ส.ค. 2569', image: 'tech_banner_2.jpg', desc: 'การจัดแสดงผลงานนวัตกรรมอาหารสัตว์ในระดับภูมิภาค' },
-    { id: 'g3', title: 'ภาพทีมงานและการลงพื้นที่ปฏิบัติงานจริง', date: '01 ส.ค. 2569', image: 'about_team.jpg', desc: 'ทีมงานผู้เชี่ยวชาญร่วมพัฒนาระบบร่วมกับชุมชนท้องถิ่น' }
+  
+  const defaultItems = [
+    {
+      id: 'g1',
+      title: 'ภาพกิจกรรมโครงการยกระดับเกษตรกรรมดิจิทัล 2569',
+      date: '06 ส.ค. 2569',
+      image: 'tech_banner_1.jpg',
+      desc: 'บรรยากาศกิจกรรมการลงพื้นที่ส่งเสริมนวัตกรรมดิจิทัล และการถ่ายทอดเทคโนโลยีให้แก่ชุมชนเกษตรกร',
+      photos: ['tech_banner_1.jpg', 'tech_banner_2.jpg', 'about_team.jpg']
+    },
+    {
+      id: 'g2',
+      title: 'งานแสดงเทคโนโลยีและนวัตกรรมอาหารสัตว์แห่งชาติ',
+      date: '05 ส.ค. 2569',
+      image: 'tech_banner_2.jpg',
+      desc: 'ภาพการเข้าร่วมจัดแสดงบูธผลงานนวัตกรรมอาหารสัตว์แปรรูปและเทคโนโลยีการผลิตในระดับภูมิภาค',
+      photos: ['tech_banner_2.jpg', 'about_team.jpg', 'tech_banner_1.jpg']
+    },
+    {
+      id: 'g3',
+      title: 'ภาพทีมงานและการลงพื้นที่ปฏิบัติงานชุมชนจริง',
+      date: '01 ส.ค. 2569',
+      image: 'about_team.jpg',
+      desc: 'ทีมงานผู้เชี่ยวชาญร่วมพัฒนาระบบและทดสอบการใช้งานจริงร่วมกับเกษตรกรในพื้นที่อย่างใกล้ชิด',
+      photos: ['about_team.jpg', 'tech_banner_1.jpg', 'tech_banner_2.jpg']
+    }
   ];
+
+  const items = (gallery && gallery.length) ? gallery : defaultItems;
   window._galleryData = items;
 
-  grid.innerHTML = items.map((item, idx) => `
-    <div class="gallery-card" onclick="openGalleryModal(${idx})">
+  grid.innerHTML = items.map((item, idx) => {
+    const photos = (item.photos && item.photos.length) ? item.photos : [item.image || 'tech_banner_1.jpg'];
+    const cover = item.image || photos[0];
+    const photoCount = photos.length;
+
+    return `
+    <div class="gallery-card" onclick="openAlbumModal(${idx})">
       <div class="gallery-img-box">
-        <img src="${item.image}" alt="${esc(item.title||'ภาพผลงาน')}" class="gallery-img" loading="lazy" />
-        <div class="gallery-overlay-icon">🔍</div>
-      </div>
-      ${(item.title || item.date) ? `
-        <div class="gallery-card-info">
-          ${item.title ? `<h4>${esc(item.title)}</h4>` : ''}
-          ${item.date ? `<span>📅 ${esc(item.date)}</span>` : ''}
+        <img src="${cover}" alt="${esc(item.title||'อัลบั้มภาพผลงาน')}" class="gallery-img" loading="lazy" />
+        <span class="album-badge-count">📷 ${photoCount} ภาพ</span>
+        <div class="gallery-overlay-icon">
+          <span style="font-size:0.95rem;font-weight:700">เปิดดูอัลบั้มภาพ (${photoCount} รูป) →</span>
         </div>
-      ` : ''}
-    </div>
-  `).join('');
+      </div>
+      <div class="gallery-card-info">
+        <h4>${esc(item.title || 'อัลบั้มภาพผลงาน')}</h4>
+        <div class="gallery-card-meta">
+          ${item.date ? `<span>📅 ${esc(item.date)}</span>` : ''}
+          <span style="color:var(--primary);font-weight:600">ดูรูปทั้งหมด (${photoCount}) →</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function openGalleryModal(idx) {
+// Album Modal Handler (เปิดหน้าดูอัลบั้มรวมรูปภาพ)
+let currentAlbumPhotos = [];
+let currentPhotoIdx = 0;
+
+function openAlbumModal(idx) {
   const items = window._galleryData || [];
   const item = items[idx];
   if(!item) return;
 
-  let overlay = document.getElementById('galleryLightBox');
+  const photos = (item.photos && item.photos.length) ? item.photos : [item.image || 'tech_banner_1.jpg'];
+  currentAlbumPhotos = photos;
+
+  let overlay = document.getElementById('albumDetailOverlay');
   if(!overlay) {
     overlay = document.createElement('div');
-    overlay.id = 'galleryLightBox';
+    overlay.id = 'albumDetailOverlay';
     overlay.className = 'news-detail-overlay';
     document.body.appendChild(overlay);
   }
 
   overlay.innerHTML = `
-    <div class="news-detail-card" style="max-width:850px;padding:28px">
-      <button class="news-detail-close" onclick="closeGalleryModal()">✕</button>
-      <div style="border-radius:12px;overflow:hidden;max-height:70vh;background:#000;display:flex;align-items:center;justify-content:center">
-        <img src="${item.image}" alt="${esc(item.title||'')}" style="max-width:100%;max-height:70vh;object-fit:contain">
+    <div class="news-detail-card" style="max-width:920px;padding:32px">
+      <button class="news-detail-close" onclick="closeAlbumModal()">✕</button>
+
+      <div class="news-detail-header" style="margin-bottom:20px">
+        <span class="news-detail-tag">📁 อัลบั้มภาพผลงาน</span>
+        ${item.date ? `<span class="news-detail-date">📅 ${esc(item.date)}</span>` : ''}
+        <span class="album-total-count">📷 รวมทั้งหมด ${photos.length} รูป</span>
+        <h2 class="news-detail-title" style="margin-top:10px">${esc(item.title || 'อัลบั้มภาพผลงาน')}</h2>
+        ${item.desc ? `<p style="font-size:0.95rem;color:#475569;margin-top:10px;line-height:1.6">${esc(item.desc)}</p>` : ''}
       </div>
-      ${(item.title || item.desc || item.date) ? `
-        <div style="margin-top:18px">
-          ${item.title ? `<h3 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin-bottom:6px">${esc(item.title)}</h3>` : ''}
-          ${item.date ? `<span style="font-size:0.85rem;color:#64748b">📅 ${esc(item.date)}</span>` : ''}
-          ${item.desc ? `<p style="font-size:0.95rem;color:#334155;margin-top:10px;line-height:1.6">${esc(item.desc)}</p>` : ''}
-        </div>
-      ` : ''}
+
+      <div class="album-photo-grid">
+        ${photos.map((pUrl, pIdx) => `
+          <div class="album-photo-item" onclick="openPhotoViewer(${pIdx})">
+            <img src="${pUrl}" alt="รูปที่ ${pIdx+1}" loading="lazy" />
+            <div class="album-photo-overlay">
+              <span>🔍 คลิกดูรูปใหญ่</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
     </div>
   `;
 
   overlay.classList.add('show');
   document.body.style.overflow = 'hidden';
   overlay.onclick = (e) => {
-    if(e.target === overlay) closeGalleryModal();
+    if(e.target === overlay) closeAlbumModal();
   };
 }
 
-function closeGalleryModal() {
-  const overlay = document.getElementById('galleryLightBox');
+function closeAlbumModal() {
+  const overlay = document.getElementById('albumDetailOverlay');
   if(overlay) overlay.classList.remove('show');
   document.body.style.overflow = '';
+}
+
+// Single Photo Fullscreen Lightbox Viewer with Slide Arrows (< >)
+function openPhotoViewer(photoIdx) {
+  currentPhotoIdx = photoIdx;
+  let viewer = document.getElementById('photoViewerLightbox');
+  if(!viewer) {
+    viewer = document.createElement('div');
+    viewer.id = 'photoViewerLightbox';
+    viewer.className = 'photo-viewer-lightbox';
+    document.body.appendChild(viewer);
+  }
+
+  updateViewerContent();
+  viewer.classList.add('show');
+}
+
+function updateViewerContent() {
+  const viewer = document.getElementById('photoViewerLightbox');
+  if(!viewer) return;
+
+  const total = currentAlbumPhotos.length;
+  const currentSrc = currentAlbumPhotos[currentPhotoIdx] || '';
+
+  viewer.innerHTML = `
+    <div class="photo-viewer-box">
+      <button class="photo-viewer-close" onclick="closePhotoViewer()">✕</button>
+      ${total > 1 ? `
+        <button class="photo-viewer-prev" onclick="prevViewerPhoto(event)">‹</button>
+        <button class="photo-viewer-next" onclick="nextViewerPhoto(event)">›</button>
+      ` : ''}
+      <img src="${currentSrc}" class="photo-viewer-img" alt="รูปที่ ${currentPhotoIdx+1}" />
+      <div class="photo-viewer-caption">
+        <span>รูปที่ ${currentPhotoIdx+1} จาก ${total}</span>
+      </div>
+    </div>
+  `;
+
+  viewer.onclick = (e) => {
+    if(e.target === viewer) closePhotoViewer();
+  };
+}
+
+function prevViewerPhoto(e) {
+  if(e) e.stopPropagation();
+  currentPhotoIdx = (currentPhotoIdx - 1 + currentAlbumPhotos.length) % currentAlbumPhotos.length;
+  updateViewerContent();
+}
+
+function nextViewerPhoto(e) {
+  if(e) e.stopPropagation();
+  currentPhotoIdx = (currentPhotoIdx + 1) % currentAlbumPhotos.length;
+  updateViewerContent();
+}
+
+function closePhotoViewer() {
+  const viewer = document.getElementById('photoViewerLightbox');
+  if(viewer) viewer.classList.remove('show');
 }
 // --- Apply Custom Columns ---
 function applyColumns(columns) {

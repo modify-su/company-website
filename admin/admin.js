@@ -803,31 +803,37 @@ function saveService(id){
 function deleteService(id){ showConfirm('ต้องการลบข่าวสารนี้?',()=>{ const d=getData(); d.services=d.services.filter(x=>x.id!==id); saveData(d); closeConfirm(); renderServices(); toast('ลบข่าวสารแล้ว','warning'); }); }
 
 /* ============================================================
-   SECTION: GALLERY (รวมภาพผลงาน)
+   SECTION: GALLERY (รวมภาพผลงาน & อัลบั้มกิจกรรม)
    ============================================================ */
-let tempGalleryImage = null;
+let tempGalleryPhotos = [];
+let tempGalleryCover = null;
 
 function renderGallery(){
   const d = getData();
   if(!d.gallery) d.gallery = [];
   document.getElementById('section-gallery').innerHTML = `
     <div class="section-header">
-      <div><h2>รวมภาพผลงาน & กิจกรรม</h2><div class="sub">จัดการอัลบั้มภาพผลงานทั้งหมด (${d.gallery.length} ภาพ)</div></div>
-      <button class="btn btn-primary" onclick="editGalleryItem(null)">+ เพิ่มภาพผลงาน</button>
+      <div><h2>รวมภาพผลงาน & อัลบั้มกิจกรรม</h2><div class="sub">จัดการอัลบั้มภาพผลงานทั้งหมด (${d.gallery.length} อัลบั้ม)</div></div>
+      <button class="btn btn-primary" onclick="editGalleryItem(null)">+ สร้างอัลบั้มใหม่</button>
     </div>
     <div class="card" style="padding:0">
       <div class="table-wrap">
         <table class="admin-table">
-          <thead><tr><th>รูปภาพ</th><th>ชื่อภาพ / คำอธิบาย</th><th>วันที่</th><th>การจัดการ</th></tr></thead>
+          <thead><tr><th>รูปปกอัลบั้ม</th><th>ชื่ออัลบั้ม / คำอธิบาย</th><th>จำนวนรูป</th><th>วันที่</th><th>การจัดการ</th></tr></thead>
           <tbody>
-            ${d.gallery.length===0?`<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">🖼️</div><p>ยังไม่มีภาพผลงาน กดเพิ่มภาพผลงานเลย!</p></div></td></tr>`:
-              d.gallery.map(g => `
+            ${d.gallery.length===0?`<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📁</div><p>ยังไม่มีอัลบั้มผลงาน กดสร้างอัลบั้มใหม่เลย!</p></div></td></tr>`:
+              d.gallery.map(g => {
+                const photos = (g.photos && g.photos.length) ? g.photos : [g.image || 'tech_banner_1.jpg'];
+                const cover = g.image || photos[0];
+                return `
                 <tr>
-                  <td><div class="item-thumb" style="width:60px;height:45px;border-radius:6px;overflow:hidden"><img src="${g.image}" style="width:100%;height:100%;object-fit:cover" alt=""></div></td>
-                  <td><strong>${esc(g.title||'ไม่มีชื่อภาพ')}</strong><div style="font-size:0.78rem;color:#64748b">${esc((g.desc||'').substring(0,50))}</div></td>
+                  <td><div class="item-thumb" style="width:65px;height:48px;border-radius:6px;overflow:hidden"><img src="${cover}" style="width:100%;height:100%;object-fit:cover" alt=""></div></td>
+                  <td><strong>${esc(g.title||'ไม่มีชื่ออัลบั้ม')}</strong><div style="font-size:0.78rem;color:#64748b">${esc((g.desc||'').substring(0,50))}</div></td>
+                  <td><span class="badge badge-purple">📷 ${photos.length} รูป</span></td>
                   <td><span class="badge badge-gray">${esc(g.date||'-')}</span></td>
-                  <td><div class="action-btns"><button class="btn btn-edit btn-sm" onclick="editGalleryItem('${g.id}')">✏️ แก้ไข</button><button class="btn btn-delete btn-sm" onclick="deleteGalleryItem('${g.id}')">🗑 ลบ</button></div></td>
-                </tr>`).join('')}
+                  <td><div class="action-btns"><button class="btn btn-edit btn-sm" onclick="editGalleryItem('${g.id}')">✏️ แก้ไขอัลบั้ม</button><button class="btn btn-delete btn-sm" onclick="deleteGalleryItem('${g.id}')">🗑 ลบ</button></div></td>
+                </tr>`;
+              }).join('')}
           </tbody>
         </table>
       </div>
@@ -837,67 +843,126 @@ function renderGallery(){
 function editGalleryItem(id){
   const d = getData();
   if(!d.gallery) d.gallery = [];
-  const g = id ? d.gallery.find(x => x.id === id) : { id: null, title: '', date: '', desc: '', image: '' };
+  const g = id ? d.gallery.find(x => x.id === id) : { id: null, title: '', date: '', desc: '', image: '', photos: [] };
   if(!g) return;
-  tempGalleryImage = g.image || null;
 
-  showModal(id ? 'แก้ไขภาพผลงาน' : 'เพิ่มภาพผลงานใหม่', `
+  tempGalleryCover = g.image || null;
+  tempGalleryPhotos = (g.photos && g.photos.length) ? [...g.photos] : (g.image ? [g.image] : []);
+
+  showModal(id ? 'แก้ไขอัลบั้มภาพผลงาน' : 'สร้างอัลบั้มภาพผลงานใหม่', `
     <div class="form-grid">
-      <div class="form-group full"><label>ชื่อภาพผลงาน / กิจกรรม</label><input type="text" id="gTitle" value="${esc(g.title||'')}" placeholder="เช่น ภาพกิจกรรมลงพื้นที่ส่งเสริมนวัตกรรม"></div>
+      <div class="form-group full"><label>ชื่ออัลบั้มภาพผลงาน / กิจกรรม *</label><input type="text" id="gTitle" value="${esc(g.title||'')}" placeholder="เช่น ภาพกิจกรรมลงพื้นที่ส่งเสริมนวัตกรรมดิจิทัล"></div>
       <div class="form-group full"><label>วันที่กิจกรรม / ผลงาน</label><input type="text" id="gDate" value="${esc(g.date||'')}" placeholder="06 สิงหาคม 2569"></div>
-      <div class="form-group full"><label>คำอธิบายเพิ่มเติม</label><textarea id="gDesc" rows="3" placeholder="รายละเอียดภาพกิจกรรม...">${esc(g.desc||'')}</textarea></div>
+      <div class="form-group full"><label>คำอธิบายอัลบั้ม</label><textarea id="gDesc" rows="3" placeholder="รายละเอียดภาพกิจกรรมฉบับย่อ...">${esc(g.desc||'')}</textarea></div>
       
-      <div class="form-group full">
-        <label>เลือกรูปภาพผลงาน (เลือกได้ 2 วิธี)</label>
+      <!-- Cover Photo -->
+      <div class="form-group full" style="background:#f8fafc;padding:16px;border-radius:10px;border:1px solid #e2e8f0">
+        <label style="font-weight:700;color:#0f172a">🖼️ รูปปกอัลบั้ม (Cover Photo)</label>
+        <div style="margin-top:8px">
+          <input type="text" id="gCoverUrl" value="${esc(g.image||'')}" placeholder="วางลิงก์รูปปก (Google Photos / Facebook URL)" oninput="updateGalleryCoverUrl(this.value)">
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+          <input type="file" id="gCoverFile" accept="image/*" style="display:none">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('gCoverFile').click()">💻 เลือกรูปปกจากเครื่อง (Local)</button>
+          <img id="gCoverPrev" class="img-preview ${g.image?'show':''}" src="${g.image||''}" style="height:60px;width:90px;object-fit:cover;border-radius:6px">
+        </div>
+      </div>
 
-        <div style="margin-bottom:12px">
-          <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:4px">🔗 วิธีที่ 1: วางลิงก์รูปภาพ (จาก Google Photos, Facebook Page หรือ URL รูปภาพ)</label>
-          <input type="text" id="gImgUrl" value="${esc(g.image||'')}" placeholder="https://... (วางลิงก์รูปภาพที่นี่)" oninput="updateGalleryImgUrl(this.value)">
+      <!-- Album Photo Collection -->
+      <div class="form-group full" style="background:#f0f9ff;padding:16px;border-radius:10px;border:1px solid #bae6fd;margin-top:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <label style="font-weight:700;color:#0369a1">📸 รูปภาพทั้งหมดในอัลบั้มนี้ (<span id="photoCountLabel">${tempGalleryPhotos.length}</span> รูป)</label>
         </div>
 
-        <div>
-          <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:4px">💻 วิธีที่ 2: อัปโหลดรูปภาพจากเครื่องคอมพิวเตอร์ผู้ดูแลระบบ (Local Machine)</label>
-          <div class="upload-area" onclick="document.getElementById('gFile').click()" style="cursor:pointer">
-            <input type="file" id="gFile" accept="image/*" style="display:none">
-            <div class="up-icon">🖼️</div>
-            <div class="up-text">คลิกเพื่อเลือกไฟล์รูปภาพจากเครื่องผู้ดูแลระบบ</div>
-          </div>
+        <div style="margin-bottom:10px;display:flex;gap:8px">
+          <input type="file" id="gAddPhotoFile" accept="image/*" style="display:none">
+          <input type="text" id="gNewPhotoUrl" placeholder="วางลิงก์ URL รูปภาพ (Google Photos / Facebook) แล้วกดเพิ่ม" style="flex:1">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addPhotoUrlToAlbum()">+ เพิ่มด้วย URL</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('gAddPhotoFile').click()">💻 อัปโหลดจากเครื่อง</button>
         </div>
 
-        <div style="margin-top:12px">
-          <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:4px">🖼️ ตัวอย่างรูปภาพที่จะแสดง:</label>
-          <img id="gImgPrev" class="img-preview ${g.image?'show':''}" src="${g.image||''}" alt="preview" style="max-height:220px;border-radius:8px;object-fit:cover">
+        <div id="albumPhotosList" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;max-height:240px;overflow-y:auto">
+          ${renderAlbumPhotosAdmin()}
         </div>
       </div>
     </div>`,
     () => saveGalleryItem(id));
 
-  setupImageUpload('gFile', 'gImgPrev', img => {
-    tempGalleryImage = img;
-    const urlInp = document.getElementById('gImgUrl');
-    if(urlInp) urlInp.value = '';
+  setupImageUpload('gCoverFile', 'gCoverPrev', img => {
+    tempGalleryCover = img;
+    if(!tempGalleryPhotos.length) {
+      tempGalleryPhotos.push(img);
+      renderAlbumPhotosAdmin();
+    }
   });
+
+  const addPhotoFileInp = document.getElementById('gAddPhotoFile');
+  if(addPhotoFileInp){
+    addPhotoFileInp.addEventListener('change', () => {
+      const file = addPhotoFileInp.files[0];
+      if(!file) return;
+      if(file.size > 8 * 1024 * 1024){ toast('รูปภาพใหญ่เกินไป (สูงสุด 8MB)','error'); return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        tempGalleryPhotos.push(e.target.result);
+        if(!tempGalleryCover) tempGalleryCover = e.target.result;
+        renderAlbumPhotosAdmin();
+        toast('เพิ่มรูปเข้าอัลบั้มเรียบร้อยแล้ว!');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 }
 
-function updateGalleryImgUrl(val){
-  const img = document.getElementById('gImgPrev');
+function updateGalleryCoverUrl(val){
+  const img = document.getElementById('gCoverPrev');
   if(img){
     if(val && val.trim()){
       img.src = val.trim();
       img.classList.add('show');
-      tempGalleryImage = val.trim();
-    } else {
-      img.src = '';
-      img.classList.remove('show');
-      tempGalleryImage = null;
+      tempGalleryCover = val.trim();
     }
   }
 }
 
+function addPhotoUrlToAlbum(){
+  const urlInp = document.getElementById('gNewPhotoUrl');
+  if(!urlInp || !urlInp.value.trim()){ toast('กรุณาวางลิงก์ URL รูปภาพ', 'error'); return; }
+  const url = urlInp.value.trim();
+  tempGalleryPhotos.push(url);
+  if(!tempGalleryCover) tempGalleryCover = url;
+  urlInp.value = '';
+  renderAlbumPhotosAdmin();
+  toast('เพิ่มรูปเข้าอัลบั้มสำเร็จ!');
+}
+
+function removePhotoFromAlbum(idx){
+  tempGalleryPhotos.splice(idx, 1);
+  renderAlbumPhotosAdmin();
+}
+
+function renderAlbumPhotosAdmin(){
+  const container = document.getElementById('albumPhotosList');
+  const label = document.getElementById('photoCountLabel');
+  if(label) label.textContent = tempGalleryPhotos.length;
+
+  const html = tempGalleryPhotos.map((pUrl, i) => `
+    <div style="position:relative;aspect-ratio:4/3;border-radius:6px;overflow:hidden;background:#cbd5e1">
+      <img src="${pUrl}" style="width:100%;height:100%;object-fit:cover" alt="">
+      <button type="button" onclick="removePhotoFromAlbum(${i})" style="position:absolute;top:4px;right:4px;background:rgba(239,68,68,0.9);color:white;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center" title="ลบรูปนี้">✕</button>
+    </div>
+  `).join('');
+
+  if(container) container.innerHTML = html || `<div style="grid-column:span 4;color:#64748b;font-size:0.85rem;text-align:center;padding:20px">ยังไม่มีรูปในอัลบั้ม กดเพิ่มรูปด้านบนได้เลย</div>`;
+  return html;
+}
+
 function saveGalleryItem(id){
-  const urlVal = document.getElementById('gImgUrl') ? document.getElementById('gImgUrl').value.trim() : '';
-  const finalImg = tempGalleryImage || urlVal;
-  if(!finalImg){ toast('กรุณาเลือกรูปภาพหรือวางลิงก์รูปภาพ', 'error'); return; }
+  const title = document.getElementById('gTitle').value.trim();
+  if(!title){ toast('กรุณากรอกชื่ออัลบั้ม', 'error'); return; }
+
+  const coverUrlVal = document.getElementById('gCoverUrl') ? document.getElementById('gCoverUrl').value.trim() : '';
+  const finalCover = tempGalleryCover || coverUrlVal || (tempGalleryPhotos[0] || 'tech_banner_1.jpg');
 
   const d = getData();
   if(!d.gallery) d.gallery = [];
@@ -905,10 +970,11 @@ function saveGalleryItem(id){
 
   const obj = {
     id: id || uid(),
-    title: document.getElementById('gTitle').value.trim(),
+    title,
     date: document.getElementById('gDate').value.trim(),
     desc: document.getElementById('gDesc').value.trim(),
-    image: finalImg
+    image: finalCover,
+    photos: tempGalleryPhotos.length ? tempGalleryPhotos : [finalCover]
   };
 
   if(index >= 0) d.gallery[index] = obj;
@@ -917,7 +983,7 @@ function saveGalleryItem(id){
   saveData(d);
   closeModal();
   renderGallery();
-  toast(id ? 'แก้ไขภาพผลงานสำเร็จ!' : 'เพิ่มภาพผลงานสำเร็จ!');
+  toast(id ? 'แก้ไขอัลบั้มภาพสำเร็จ!' : 'สร้างอัลบั้มภาพใหม่สำเร็จ!');
 }
 
 function deleteGalleryItem(id){
