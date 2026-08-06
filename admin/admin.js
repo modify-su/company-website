@@ -928,12 +928,31 @@ function updateGalleryCoverUrl(val){
 function addPhotoUrlToAlbum(){
   const urlInp = document.getElementById('gNewPhotoUrl');
   if(!urlInp || !urlInp.value.trim()){ toast('กรุณาวางลิงก์ URL รูปภาพ', 'error'); return; }
-  const url = urlInp.value.trim();
-  tempGalleryPhotos.push(url);
-  if(!tempGalleryCover) tempGalleryCover = url;
+  const rawText = urlInp.value.trim();
+
+  // Split by newlines, commas, or spaces to support pasting multiple photo links at once
+  const urls = rawText.split(/[\n,\s]+/).map(u => u.trim()).filter(u => u.length > 5 && (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:image')));
+
+  if(!urls.length){
+    toast('กรุณาวางลิงก์ URL รูปภาพที่ถูกต้อง (เริ่มต้นด้วย http:// หรือ https://)', 'error');
+    return;
+  }
+
+  let countAdded = 0;
+  urls.forEach(url => {
+    if(!tempGalleryPhotos.includes(url)){
+      tempGalleryPhotos.push(url);
+      countAdded++;
+    }
+  });
+
+  if(!tempGalleryCover && tempGalleryPhotos.length) {
+    tempGalleryCover = tempGalleryPhotos[0];
+  }
+
   urlInp.value = '';
   renderAlbumPhotosAdmin();
-  toast('เพิ่มรูปเข้าอัลบั้มสำเร็จ!');
+  toast(`ดึงรูปภาพเข้าอัลบั้มสำเร็จเรียบร้อย (${countAdded} รูป)!`);
 }
 
 function removePhotoFromAlbum(idx){
@@ -948,7 +967,7 @@ function renderAlbumPhotosAdmin(){
 
   const html = tempGalleryPhotos.map((pUrl, i) => `
     <div style="position:relative;aspect-ratio:4/3;border-radius:6px;overflow:hidden;background:#cbd5e1">
-      <img src="${pUrl}" style="width:100%;height:100%;object-fit:cover" alt="">
+      <img src="${pUrl}" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover" alt="รูปที่ ${i+1}">
       <button type="button" onclick="removePhotoFromAlbum(${i})" style="position:absolute;top:4px;right:4px;background:rgba(239,68,68,0.9);color:white;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center" title="ลบรูปนี้">✕</button>
     </div>
   `).join('');

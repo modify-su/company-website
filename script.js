@@ -706,7 +706,7 @@ function applyGallery(gallery) {
     return `
     <div class="gallery-card" onclick="openAlbumModal(${idx})">
       <div class="gallery-img-box">
-        <img src="${cover}" alt="${esc(item.title||'อัลบั้มภาพผลงาน')}" class="gallery-img" loading="lazy" />
+        <img src="${cover}" referrerpolicy="no-referrer" alt="${esc(item.title||'อัลบั้มภาพผลงาน')}" class="gallery-img" loading="lazy" />
         <span class="album-badge-count">📷 ${photoCount} ภาพ</span>
         <div class="gallery-overlay-icon">
           <span style="font-size:0.95rem;font-weight:700">เปิดดูอัลบั้มภาพ (${photoCount} รูป) →</span>
@@ -758,7 +758,7 @@ function openAlbumModal(idx) {
       <div class="album-photo-grid">
         ${photos.map((pUrl, pIdx) => `
           <div class="album-photo-item" onclick="openPhotoViewer(${pIdx})">
-            <img src="${pUrl}" alt="รูปที่ ${pIdx+1}" loading="lazy" />
+            <img src="${pUrl}" referrerpolicy="no-referrer" alt="รูปที่ ${pIdx+1}" loading="lazy" />
             <div class="album-photo-overlay">
               <span>🔍 คลิกดูรูปใหญ่</span>
             </div>
@@ -810,7 +810,7 @@ function updateViewerContent() {
         <button class="photo-viewer-prev" onclick="prevViewerPhoto(event)">‹</button>
         <button class="photo-viewer-next" onclick="nextViewerPhoto(event)">›</button>
       ` : ''}
-      <img src="${currentSrc}" class="photo-viewer-img" alt="รูปที่ ${currentPhotoIdx+1}" />
+      <img src="${currentSrc}" referrerpolicy="no-referrer" class="photo-viewer-img" alt="รูปที่ ${currentPhotoIdx+1}" />
       <div class="photo-viewer-caption">
         <span>รูปที่ ${currentPhotoIdx+1} จาก ${total}</span>
       </div>
