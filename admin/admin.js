@@ -870,24 +870,26 @@ function editGalleryItem(id){
       </div>
 
       <!-- Album Photo Collection -->
-      <div class="form-group full" style="background:#f0f9ff;padding:16px;border-radius:10px;border:1px solid #bae6fd;margin-top:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <label style="font-weight:700;color:#0369a1">📸 รูปภาพตัวอย่างในอัลบั้มนี้ (<span id="photoCountLabel">${tempGalleryPhotos.length}</span> รูป)</label>
+      <div class="form-group full" style="background:#f0f9ff;padding:18px;border-radius:12px;border:1px solid #bae6fd;margin-top:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <label style="font-weight:700;color:#0369a1;font-size:1rem">📸 รูปภาพทั้งหมดในอัลบั้มนี้ (<span id="photoCountLabel">${tempGalleryPhotos.length}</span> รูป)</label>
         </div>
 
-        <div style="font-size:0.8rem;color:#334155;background:#e0f2fe;padding:8px 12px;border-radius:6px;margin-bottom:12px;line-height:1.4">
-          💡 <strong>เคล็ดลับการดึงรูปภาพจาก Google Photos / Facebook:</strong><br>
-          หากวางลิงก์อัลบั้มแชร์ (เช่น https://photos.app.goo.gl/...) ระบบจะ Auto-Extract ดึงรูปตัวอย่างมาให้อัตโนมัติเลยครับ
+        <!-- Big Multi-File Upload Dropzone -->
+        <div class="upload-area" onclick="document.getElementById('gAddPhotoFile').click()" style="cursor:pointer;background:#ffffff;border:2px dashed #0284c7;padding:22px;border-radius:10px;text-align:center;margin-bottom:14px;transition:all 0.2s">
+          <input type="file" id="gAddPhotoFile" accept="image/*" multiple style="display:none">
+          <div style="font-size:2.4rem">📁 ➕</div>
+          <div style="font-size:1rem;font-weight:700;color:#0369a1;margin-top:6px">คลิกที่นี่เพื่อเลือกรูปภาพจากเครื่อง (เลือกพร้อมกันกี่รูปก็ได้)</div>
+          <div style="font-size:0.82rem;color:#64748b;margin-top:4px">💡 สามารถกด Ctrl หรือ Shift บนคีย์บอร์ด เพื่อเลือกพร้อมกันได้ 10-50+ รูปในครั้งเดียว โดยไม่ต้องวางลิงก์!</div>
         </div>
 
-        <div style="margin-bottom:10px;display:flex;gap:8px">
-          <input type="file" id="gAddPhotoFile" accept="image/*" style="display:none">
-          <input type="text" id="gNewPhotoUrl" placeholder="วางลิงก์ Google Photos Album หรือ ลิงก์รูปภาพแล้วกดเพิ่ม" style="flex:1">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="addPhotoUrlToAlbum()">+ เพิ่มด้วย URL</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('gAddPhotoFile').click()">💻 เลือกไฟล์จากเครื่อง</button>
+        <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center">
+          <span style="font-size:0.82rem;color:#64748b;white-space:nowrap">หรือวางลิงก์ URL:</span>
+          <input type="text" id="gNewPhotoUrl" placeholder="วางลิงก์ URL รูปภาพ หรือ ลิงก์ Google Photos Album" style="flex:1">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addPhotoUrlToAlbum()">+ ดึงด้วย URL</button>
         </div>
 
-        <div id="albumPhotosList" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;max-height:240px;overflow-y:auto">
+        <div id="albumPhotosList" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;max-height:280px;overflow-y:auto">
           ${renderAlbumPhotosAdmin()}
         </div>
       </div>
@@ -905,17 +907,25 @@ function editGalleryItem(id){
   const addPhotoFileInp = document.getElementById('gAddPhotoFile');
   if(addPhotoFileInp){
     addPhotoFileInp.addEventListener('change', () => {
-      const file = addPhotoFileInp.files[0];
-      if(!file) return;
-      if(file.size > 8 * 1024 * 1024){ toast('รูปภาพใหญ่เกินไป (สูงสุด 8MB)','error'); return; }
-      const reader = new FileReader();
-      reader.onload = e => {
-        tempGalleryPhotos.push(e.target.result);
-        if(!tempGalleryCover) tempGalleryCover = e.target.result;
-        renderAlbumPhotosAdmin();
-        toast('เพิ่มรูปเข้าอัลบั้มเรียบร้อยแล้ว!');
-      };
-      reader.readAsDataURL(file);
+      const files = Array.from(addPhotoFileInp.files || []);
+      if(!files.length) return;
+      
+      toast(`⏳ กำลังโหลดรูปภาพ ${files.length} รูปเข้าอัลบั้ม...`, 'info');
+      let loaded = 0;
+      
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          tempGalleryPhotos.push(e.target.result);
+          if(!tempGalleryCover) tempGalleryCover = e.target.result;
+          loaded++;
+          if(loaded === files.length) {
+            renderAlbumPhotosAdmin();
+            toast(`🎉 เพิ่มรูปภาพสำเร็จ ${files.length} รูปเข้าอัลบั้มเรียบร้อยแล้ว!`);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     });
   }
 }
