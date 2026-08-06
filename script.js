@@ -454,31 +454,36 @@ function applyServices(services) {
   if(!grid) return;
   window._newsItemsData = services;
 
-  grid.innerHTML = services.map(s => `
-    <div class="service-card ${s.featured?'featured':''}" onclick="openNewsModal('${s.id}')" style="cursor:pointer">
-      ${s.featured?'<div class="service-badge">ข่าวสำคัญ</div>':''}
-      <div class="service-icon-wrap" style="--clr:${esc(s.color||'#7c3aed')}">
-        <span style="font-size:1.6rem">${esc(s.icon||'📰')}</span>
+  const defaultImgs = ['tech_banner_1.jpg', 'tech_banner_2.jpg', 'about_team.jpg'];
+
+  grid.innerHTML = services.map((s, idx) => {
+    const imgSrc = s.image || defaultImgs[idx % defaultImgs.length];
+    return `
+    <div class="news-card" onclick="openNewsModal('${s.id}')">
+      <div class="news-card-img-wrap">
+        <img src="${imgSrc}" alt="${esc(s.title)}" class="news-card-img" />
+        ${s.featured ? '<span class="news-card-badge">ข่าวสำคัญ</span>' : ''}
       </div>
-      ${s.date?`<div class="service-date">📅 ${esc(s.date)}</div>`:''}
-      <h3>${esc(s.title)}</h3>
-      <p>${esc(s.desc)}</p>
-      <ul class="service-list">${(s.features||[]).map(f=>`<li>${esc(f)}</li>`).join('')}</ul>
-      <div class="service-btn-read">
-        <span>อ่านรายละเอียดข่าว & ไฟล์แนบ</span>
-        <span class="service-arrow">→</span>
+      <div class="news-card-body">
+        <h3 class="news-card-title">${esc(s.title)}</h3>
+        <div class="news-card-footer">
+          <span class="news-card-date">${esc(s.date || '06 ส.ค. 2569')}</span>
+          <button class="news-card-share" onclick="event.stopPropagation(); shareNewsCard('${esc(s.title)}')" title="แชร์ข่าว">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+          </button>
+        </div>
       </div>
-    </div>`).join('');
-  // Re-apply tilt effect
-  document.querySelectorAll('.service-card').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 10;
-      const y = ((e.clientY - rect.top) / rect.height - 0.5) * -10;
-      card.style.transform = `translateY(-8px) rotateX(${y}deg) rotateY(${x}deg)`;
-    });
-    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
-  });
+    </div>`;
+  }).join('');
+}
+
+function shareNewsCard(title) {
+  if (navigator.share) {
+    navigator.share({ title: title, url: window.location.href }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    alert('คัดลอกลิงก์ข่าวประชาสัมพันธ์เรียบร้อยแล้ว!');
+  }
 }
 
 // News Modal Handler
