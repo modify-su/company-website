@@ -447,21 +447,27 @@ function applyAbout(about) {
   }
 }
 
-// --- Apply Services ---
+// --- Apply Services / News PR ---
 function applyServices(services) {
   if(!services || !services.length) return;
   const grid = document.querySelector('.services-grid');
   if(!grid) return;
+  window._newsItemsData = services;
+
   grid.innerHTML = services.map(s => `
-    <div class="service-card ${s.featured?'featured':''}">
-      ${s.featured?'<div class="service-badge">ยอดนิยม</div>':''}
-      <div class="service-icon-wrap" style="--clr:${esc(s.color)}">
-        <span style="font-size:1.6rem">${esc(s.icon||'🔧')}</span>
+    <div class="service-card ${s.featured?'featured':''}" onclick="openNewsModal('${s.id}')" style="cursor:pointer">
+      ${s.featured?'<div class="service-badge">ข่าวสำคัญ</div>':''}
+      <div class="service-icon-wrap" style="--clr:${esc(s.color||'#7c3aed')}">
+        <span style="font-size:1.6rem">${esc(s.icon||'📰')}</span>
       </div>
+      ${s.date?`<div class="service-date">📅 ${esc(s.date)}</div>`:''}
       <h3>${esc(s.title)}</h3>
       <p>${esc(s.desc)}</p>
       <ul class="service-list">${(s.features||[]).map(f=>`<li>${esc(f)}</li>`).join('')}</ul>
-      <div class="service-arrow">→</div>
+      <div class="service-btn-read">
+        <span>อ่านรายละเอียดข่าว & ไฟล์แนบ</span>
+        <span class="service-arrow">→</span>
+      </div>
     </div>`).join('');
   // Re-apply tilt effect
   document.querySelectorAll('.service-card').forEach(card => {
@@ -473,6 +479,79 @@ function applyServices(services) {
     });
     card.addEventListener('mouseleave', () => { card.style.transform = ''; });
   });
+}
+
+// News Modal Handler
+function openNewsModal(id) {
+  const items = window._newsItemsData || [];
+  const s = items.find(x => x.id === id);
+  if(!s) return;
+
+  let overlay = document.getElementById('newsDetailOverlay');
+  if(!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'newsDetailOverlay';
+    overlay.className = 'news-detail-overlay';
+    document.body.appendChild(overlay);
+  }
+
+  overlay.innerHTML = `
+    <div class="news-detail-card">
+      <button class="news-detail-close" onclick="closeNewsModal()">✕</button>
+      <div class="news-detail-header">
+        <span class="news-detail-tag">ข่าวสารประชาสัมพันธ์</span>
+        ${s.date ? `<span class="news-detail-date">📅 ${esc(s.date)}</span>` : ''}
+        <h2 class="news-detail-title">${esc(s.title)}</h2>
+      </div>
+      <div class="news-detail-body">
+        ${s.image ? `
+          <div class="news-detail-img-box">
+            <img src="${s.image}" alt="${esc(s.title)}" class="news-detail-img">
+          </div>
+        ` : ''}
+        
+        <div class="news-detail-text">
+          <p style="font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:16px">${esc(s.desc)}</p>
+          ${s.fullText ? `<div class="news-full-body">${esc(s.fullText).replace(/\n/g, '<br/>')}</div>` : ''}
+        </div>
+
+        ${(s.features && s.features.length) ? `
+          <div class="news-detail-highlights">
+            <h4>📌 ประเด็นสำคัญ / รายละเอียดเพิ่มเติม</h4>
+            <ul>
+              ${s.features.map(f => `<li>✓ ${esc(f)}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
+
+        ${s.pdfUrl ? `
+          <div class="news-detail-pdf-box">
+            <div class="pdf-icon">📄</div>
+            <div class="pdf-info">
+              <strong>เอกสารแนบประกอบข่าว (PDF)</strong>
+              <span>${esc(s.pdfName || 'ดาวน์โหลดรายงานข่าวสาร_ฉบับเต็ม.pdf')}</span>
+            </div>
+            <a href="${s.pdfUrl}" download="${esc(s.pdfName || 'document.pdf')}" class="btn-download-pdf" target="_blank">
+              <span>ดาวน์โหลด PDF</span>
+              <span>↓</span>
+            </a>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  overlay.onclick = (e) => {
+    if(e.target === overlay) closeNewsModal();
+  };
+}
+
+function closeNewsModal() {
+  const overlay = document.getElementById('newsDetailOverlay');
+  if(overlay) overlay.classList.remove('show');
+  document.body.style.overflow = '';
 }
 
 // --- Apply Portfolio ---

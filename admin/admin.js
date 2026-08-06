@@ -707,42 +707,100 @@ function renderServices(){
       </div>
     </div>`;
 }
+let tempServiceImage = null;
 function editService(id){
   const d=getData();
-  const s=id?d.services.find(x=>x.id===id):{id:null,icon:'🔧',color:'#7c3aed',title:'',desc:'',features:[''],featured:false};
+  const s=id?d.services.find(x=>x.id===id):{id:null,icon:'📰',color:'#7c3aed',title:'',desc:'',features:[''],featured:false,date:'',fullText:'',image:null,pdfUrl:'',pdfName:''};
   if(!s) return;
-  showModal(id?'แก้ไขบริการ':'เพิ่มบริการใหม่',`
+  tempServiceImage = s.image || null;
+  showModal(id?'แก้ไขข่าวสาร / บริการ':'เพิ่มข่าวสาร / บริการใหม่',`
     <div class="form-grid">
-      <div class="form-group"><label>ไอคอน (Emoji)</label><input type="text" id="sIcon" value="${esc(s.icon)}" placeholder="🔧"></div>
-      <div class="form-group"><label>สี (HEX)</label><div style="display:flex;gap:8px"><input type="color" id="sColorPick" value="${s.color}" onchange="document.getElementById('sColor').value=this.value"><input type="text" id="sColor" value="${esc(s.color)}" placeholder="#7c3aed" onchange="document.getElementById('sColorPick').value=this.value"></div></div>
-      <div class="form-group full"><label>ชื่อบริการ *</label><input type="text" id="sTitle" value="${esc(s.title)}" placeholder="ชื่อบริการ"></div>
-      <div class="form-group full"><label>คำอธิบาย *</label><textarea id="sDesc" rows="3">${esc(s.desc)}</textarea></div>
+      <div class="form-group"><label>ไอคอน (Emoji)</label><input type="text" id="sIcon" value="${esc(s.icon||'📰')}" placeholder="📰"></div>
+      <div class="form-group"><label>วันที่ประกาศข่าว</label><input type="text" id="sDate" value="${esc(s.date||'')}" placeholder="06 สิงหาคม 2569"></div>
+      <div class="form-group full"><label>หัวข้อข่าวสาร / บริการ *</label><input type="text" id="sTitle" value="${esc(s.title)}" placeholder="กรอกหัวข้อข่าวสาร"></div>
+      <div class="form-group full"><label>คำอธิบายย่อ (แสดงบนการ์ด) *</label><textarea id="sDesc" rows="2">${esc(s.desc)}</textarea></div>
+      <div class="form-group full"><label>เนื้อหาข่าวฉบับเต็ม (แสดงเมื่อคลิกอ่านข่าว)</label><textarea id="sFullText" rows="6" placeholder="กรอกเนื้อหาข่าว รายงานข่าว หรือรายละเอียดฉบับเต็มที่นี่...">${esc(s.fullText||'')}</textarea></div>
+      
       <div class="form-group full">
-        <label>Features (จุดเด่น)</label>
-        <div class="feature-list" id="featureList">
-          ${(s.features||['']).map((f,i)=>`<div class="feature-item-row"><input type="text" class="feat-inp" value="${esc(f)}" placeholder="Feature ${i+1}"><button class="btn-rm-feature" onclick="rmFeat(this)">✕</button></div>`).join('')}
+        <label>รูปภาพประกอบข่าว / รูปปก</label>
+        <div class="image-upload-wrap">
+          <input type="file" id="sFile" accept="image/*" style="display:none">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sFile').click()">📷 เลือกรูปภาพประกอบ</button>
+          <img id="sImgPrev" src="${s.image||''}" class="img-preview ${s.image?'show':''}">
         </div>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="addFeat()" style="margin-top:6px">+ เพิ่ม Feature</button>
+      </div>
+
+      <div class="form-group full">
+        <label>ไฟล์แนบ PDF / เอกสารดาวน์โหลด (PDF File Attachment)</label>
+        <input type="file" id="sPdfFile" accept=".pdf" style="display:none">
+        <div style="display:flex;gap:8px">
+          <input type="text" id="sPdfUrl" value="${esc(s.pdfUrl||'')}" placeholder="ลิงก์ไฟล์ PDF หรือกดอัปโหลดข้างๆ" style="flex:1">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sPdfFile').click()">📄 เลือกไฟล์ PDF</button>
+        </div>
+        <input type="text" id="sPdfName" value="${esc(s.pdfName||'')}" placeholder="ชื่อไฟล์แนบ e.g. รายงานข่าวสาร_ฉบับเต็ม.pdf" style="margin-top:6px">
+      </div>
+
+      <div class="form-group full">
+        <label>จุดเด่น / รายละเอียดเพิ่มเติม (Features)</label>
+        <div class="feature-list" id="featureList">
+          ${(s.features||['']).map((f,i)=>`<div class="feature-item-row"><input type="text" class="feat-inp" value="${esc(f)}" placeholder="รายละเอียด ${i+1}"><button class="btn-rm-feature" onclick="rmFeat(this)">✕</button></div>`).join('')}
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addFeat()" style="margin-top:6px">+ เพิ่มรายการ</button>
       </div>
       <div class="form-group full">
-        <div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="sFeatured" ${s.featured?'checked':''}><span class="toggle-sl"></span></label><span class="toggle-label">แสดงป้าย "ยอดนิยม"</span></div>
+        <div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="sFeatured" ${s.featured?'checked':''}><span class="toggle-sl"></span></label><span class="toggle-label">แสดงป้าย "ข่าวสำคัญ / ยอดนิยม"</span></div>
       </div>
     </div>`,
     ()=>saveService(id));
+
+  setupImageUpload('sFile','sImgPrev',img=>{ tempServiceImage=img; });
+
+  const pdfInp = document.getElementById('sPdfFile');
+  if(pdfInp){
+    pdfInp.addEventListener('change', ()=>{
+      const file = pdfInp.files[0];
+      if(!file) return;
+      if(file.size > 8 * 1024 * 1024){ toast('ไฟล์ PDF ใหญ่เกินไป (สูงสุด 8MB)','error'); return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('sPdfUrl').value = e.target.result;
+        if(!document.getElementById('sPdfName').value) {
+          document.getElementById('sPdfName').value = file.name;
+        }
+        toast('อัปโหลดไฟล์ PDF เรียบร้อยแล้ว!');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 }
-function addFeat(){ const fl=document.getElementById('featureList'); const div=document.createElement('div'); div.className='feature-item-row'; div.innerHTML=`<input type="text" class="feat-inp" placeholder="Feature"><button class="btn-rm-feature" onclick="rmFeat(this)">✕</button>`; fl.appendChild(div); }
+function addFeat(){ const fl=document.getElementById('featureList'); const div=document.createElement('div'); div.className='feature-item-row'; div.innerHTML=`<input type="text" class="feat-inp" placeholder="รายละเอียด"><button class="btn-rm-feature" onclick="rmFeat(this)">✕</button>`; fl.appendChild(div); }
 function rmFeat(btn){ btn.parentElement.remove(); }
 function saveService(id){
   const title=document.getElementById('sTitle').value.trim();
-  if(!title){ toast('กรุณากรอกชื่อบริการ','error'); return; }
+  if(!title){ toast('กรุณากรอกชื่อหัวข้อข่าว','error'); return; }
   const feats=[...document.querySelectorAll('.feat-inp')].map(i=>i.value.trim()).filter(Boolean);
   const d=getData();
-  const obj={id:id||uid(),icon:document.getElementById('sIcon').value||'🔧',color:document.getElementById('sColor').value||'#7c3aed',title,desc:document.getElementById('sDesc').value.trim(),features:feats,featured:document.getElementById('sFeatured').checked};
-  if(id){ const idx=d.services.findIndex(x=>x.id===id); if(idx>-1) d.services[idx]=obj; }
+  const index=id?d.services.findIndex(x=>x.id===id):-1;
+  const oldItem=index>=0?d.services[index]:{};
+  const obj={
+    id:id||uid(),
+    icon:document.getElementById('sIcon').value||'📰',
+    color:document.getElementById('sColor')?document.getElementById('sColor').value:'#7c3aed',
+    title,
+    desc:document.getElementById('sDesc').value.trim(),
+    fullText:document.getElementById('sFullText').value.trim(),
+    date:document.getElementById('sDate').value.trim(),
+    image:tempServiceImage!==null?tempServiceImage:oldItem.image,
+    pdfUrl:document.getElementById('sPdfUrl').value.trim(),
+    pdfName:document.getElementById('sPdfName').value.trim(),
+    features:feats,
+    featured:document.getElementById('sFeatured').checked
+  };
+  if(index>=0) d.services[index]=obj;
   else d.services.push(obj);
-  saveData(d); closeModal(); renderServices(); toast(id?'แก้ไขบริการสำเร็จ!':'เพิ่มบริการสำเร็จ!');
+  saveData(d); closeModal(); renderServices(); toast(id?'แก้ไขข่าวสารสำเร็จ!':'เพิ่มข่าวสารสำเร็จ!');
 }
-function deleteService(id){ showConfirm('ต้องการลบบริการนี้?',()=>{ const d=getData(); d.services=d.services.filter(x=>x.id!==id); saveData(d); closeConfirm(); renderServices(); toast('ลบบริการแล้ว','warning'); }); }
+function deleteService(id){ showConfirm('ต้องการลบข่าวสารนี้?',()=>{ const d=getData(); d.services=d.services.filter(x=>x.id!==id); saveData(d); closeConfirm(); renderServices(); toast('ลบข่าวสารแล้ว','warning'); }); }
 
 /* ============================================================
    SECTION: CATEGORIES
