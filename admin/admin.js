@@ -904,15 +904,50 @@ function editPortfolio(id){
         <div id="gradPreview" style="height:50px;border-radius:10px;margin-top:10px;background:${grad(p.gradStart,p.gradEnd)};display:flex;align-items:center;justify-content:center;font-size:1.5rem">${p.icon||'🎯'}</div>
       </div>
       <div class="form-group full">
-        <label>รูปภาพ (ไม่บังคับ — ถ้าไม่ใส่จะใช้ Gradient)</label>
-        <div class="upload-area"><input type="file" id="pFile" accept="image/*"><div class="up-icon">🖼️</div><div class="up-text">อัปโหลดรูปผลงาน</div></div>
-        <img id="pImgPrev" class="img-preview ${p.image?'show':''}" src="${p.image||''}" alt="preview">
+        <label>รูปภาพผลงาน / อัลบั้ม (เลือกได้ 2 วิธี)</label>
+        
+        <div style="margin-bottom:12px">
+          <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:4px">🔗 วิธีที่ 1: วางลิงก์รูปภาพ (จาก Google Photos, Facebook Page หรือ URL รูปภาพ)</label>
+          <input type="text" id="pImgUrl" value="${esc(p.image||'')}" placeholder="https://... (วางลิงก์รูปภาพที่นี่)" oninput="updatePortImgUrl(this.value)">
+        </div>
+
+        <div>
+          <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:4px">💻 วิธีที่ 2: อัปโหลดรูปภาพจากเครื่องคอมพิวเตอร์ผู้ดูแลระบบ (Local Machine)</label>
+          <div class="upload-area" onclick="document.getElementById('pFile').click()" style="cursor:pointer">
+            <input type="file" id="pFile" accept="image/*" style="display:none">
+            <div class="up-icon">🖼️</div>
+            <div class="up-text">คลิกเพื่อเลือกไฟล์รูปภาพจากเครื่องผู้ดูแลระบบ</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:4px">🖼️ ตัวอย่างรูปภาพผลงานที่จะแสดง:</label>
+          <img id="pImgPrev" class="img-preview ${p.image?'show':''}" src="${p.image||''}" alt="preview" style="max-height:220px;border-radius:8px;object-fit:cover">
+        </div>
       </div>
       <div class="form-group full">
         <div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="pLarge" ${p.large?'checked':''}><span class="toggle-sl"></span></label><span class="toggle-label">แสดงแบบกว้าง 2 คอลัมน์</span></div>
       </div>
     </div>`,()=>savePortfolio(id));
-  setupImageUpload('pFile','pImgPrev',img=>{ tempPortfolioImage=img; });
+  setupImageUpload('pFile','pImgPrev',img=>{
+    tempPortfolioImage=img;
+    const urlInp = document.getElementById('pImgUrl');
+    if(urlInp) urlInp.value = '';
+  });
+}
+function updatePortImgUrl(val){
+  const img = document.getElementById('pImgPrev');
+  if(img){
+    if(val && val.trim()){
+      img.src = val.trim();
+      img.classList.add('show');
+      tempPortfolioImage = val.trim();
+    } else {
+      img.src = '';
+      img.classList.remove('show');
+      tempPortfolioImage = null;
+    }
+  }
 }
 function previewPortGrad(){
   const s=document.getElementById('pGS').value;
@@ -932,6 +967,9 @@ function setPortGrad(s,e,el){
 function savePortfolio(id){
   const title=document.getElementById('pTitle').value.trim();
   if(!title){ toast('กรุณากรอกชื่อผลงาน','error'); return; }
+  const urlVal = document.getElementById('pImgUrl') ? document.getElementById('pImgUrl').value.trim() : '';
+  const finalImg = tempPortfolioImage || urlVal || null;
+
   const d=getData();
   const obj={
     id:id||uid(),title,
@@ -940,7 +978,7 @@ function savePortfolio(id){
     gradStart:document.getElementById('pGS').value,
     gradEnd:document.getElementById('pGE').value,
     icon:document.getElementById('pIcon').value||'🎯',
-    image:tempPortfolioImage,
+    image:finalImg,
     large:document.getElementById('pLarge').checked
   };
   if(id){ const idx=d.portfolio.findIndex(x=>x.id===id); if(idx>-1) d.portfolio[idx]=obj; }

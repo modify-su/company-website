@@ -575,18 +575,19 @@ function applyPortfolio(portfolio, categories) {
   const grid = document.querySelector('.portfolio-grid');
   if(!grid) return;
   grid.innerHTML = portfolio.map(p => {
-    const bg = p.image ? `background:${grad(p.gradStart,p.gradEnd)};` : `background:${grad(p.gradStart,p.gradEnd)};`;
+    const bg = `background:${grad(p.gradStart,p.gradEnd)};`;
     return `
       <div class="portfolio-item ${p.large?'large':''}" data-category="${esc(p.category)}">
         <div class="portfolio-img" style="${bg}">
+          ${p.image
+            ? `<img src="${p.image}" alt="${esc(p.title)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:transform .5s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+               <div class="p-icon" style="display:none">${esc(p.icon||'🎯')}</div>`
+            : `<div class="p-icon">${esc(p.icon||'🎯')}</div>`}
           <div class="portfolio-overlay">
             <h4>${esc(p.title)}</h4>
             <p>${esc(p.tech)}</p>
-            <a href="#" class="portfolio-link">ดูโปรเจค →</a>
+            <a href="${p.image||'#'}" target="_blank" class="portfolio-link" onclick="if(this.getAttribute('href')==='#') event.preventDefault();">ดูรูปภาพขยาย →</a>
           </div>
-          ${p.image
-            ? `<img src="${p.image}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.85">`
-            : `<div class="p-icon">${esc(p.icon||'🎯')}</div>`}
         </div>
       </div>`;
   }).join('');
