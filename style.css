@@ -63,6 +63,7 @@ ul { list-style: none; }
   display: inline-block;
   padding: 4px 0;
   line-height: 1.35;
+  margin-left: 0.25em;
 }
 .section-tag {
   display: inline-flex;
