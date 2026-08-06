@@ -675,6 +675,7 @@ function applyGallery(gallery) {
       date: '06 ส.ค. 2569',
       image: 'https://lh3.googleusercontent.com/pw/AP1GczP1h58K3_xupCE5yvN_AD58ZgFW_ywMgZazVIOslpuZt72mzCrFaoHlUaGQGVT1EuPLhMkAQeAEJOrE-fQ-2yQwtoEGB3xWd2nlzNYnZw0Pk08yHWcF=w1200',
       desc: 'อัลบั้มภาพกิจกรรมและการทำงานส่งเสริมนวัตกรรมดิจิทัลดึงตรงจาก Google Photos Album',
+      externalUrl: 'https://photos.app.goo.gl/58LAS8aZPES9GAjf9',
       photos: [
         'https://lh3.googleusercontent.com/pw/AP1GczP1h58K3_xupCE5yvN_AD58ZgFW_ywMgZazVIOslpuZt72mzCrFaoHlUaGQGVT1EuPLhMkAQeAEJOrE-fQ-2yQwtoEGB3xWd2nlzNYnZw0Pk08yHWcF=w1200',
         'https://lh3.googleusercontent.com/pw/AP1GczObXng0Yo38-a6Yrtpn-GXJ2dKQbATviiA4hjV06uRMMCXknAiKOWvPh0J3dwuirLezu3FSa1EIYergSjldCOSMJ1acf6MP2YWh-dopLxIsB2SHyl4o=w1200',
