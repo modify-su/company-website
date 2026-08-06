@@ -671,11 +671,27 @@ function applyGallery(gallery) {
   const defaultItems = [
     {
       id: 'g1',
-      title: 'ภาพกิจกรรมโครงการยกระดับเกษตรกรรมดิจิทัล 2569',
+      title: 'ภาพกิจกรรมและผลงาน AWARIN ING. (Google Photos Album)',
       date: '06 ส.ค. 2569',
-      image: 'tech_banner_1.jpg',
-      desc: 'บรรยากาศกิจกรรมการลงพื้นที่ส่งเสริมนวัตกรรมดิจิทัล และการถ่ายทอดเทคโนโลยีให้แก่ชุมชนเกษตรกร',
-      photos: ['tech_banner_1.jpg', 'tech_banner_2.jpg', 'about_team.jpg']
+      image: 'https://lh3.googleusercontent.com/pw/AP1GczP1h58K3_xupCE5yvN_AD58ZgFW_ywMgZazVIOslpuZt72mzCrFaoHlUaGQGVT1EuPLhMkAQeAEJOrE-fQ-2yQwtoEGB3xWd2nlzNYnZw0Pk08yHWcF=w1200',
+      desc: 'อัลบั้มภาพกิจกรรมและการทำงานส่งเสริมนวัตกรรมดิจิทัลดึงตรงจาก Google Photos Album',
+      photos: [
+        'https://lh3.googleusercontent.com/pw/AP1GczP1h58K3_xupCE5yvN_AD58ZgFW_ywMgZazVIOslpuZt72mzCrFaoHlUaGQGVT1EuPLhMkAQeAEJOrE-fQ-2yQwtoEGB3xWd2nlzNYnZw0Pk08yHWcF=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczObXng0Yo38-a6Yrtpn-GXJ2dKQbATviiA4hjV06uRMMCXknAiKOWvPh0J3dwuirLezu3FSa1EIYergSjldCOSMJ1acf6MP2YWh-dopLxIsB2SHyl4o=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczOIkU2rsiWGEcsPmsNnM-lpI-S5DKIYOa4oPA_QNnaXtKIf75BdkqQ99jQUbjgdU9CRCaCHxHbaPkvZey8eTVcqWhofLVUMxefURbWIbozYfzJYtj87=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczNcffzZyHoZN53hVBN9MQTL5eXsGSgSjO2sUt95pkl0iLc-fOjsHrLuGTnK-5JSX5sQ1rLoOTPgj_dA6aG-aysRm0gAPbeLHvyZwLxoXKc3_Y8cA5az=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczOx61eQsq-mbmEwONgyoZEa6K0jU8uGkq1OrzF0JrH4H_Xgo3N03CgVZYHHVC8Zn-7QDHL7IMNtZlkTdG9mkhgTfCqj-eXaTIfk8VL_63lRA8ar_R2m=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczNYnxMRx2WkTcshEo0mpgLLkyvHJ913M6zfY98XuRWvKZnCTpCx9cONsjhFEIVI_LzJtPUdYtbmgSq_KrYizEjDtIj9ksAYKZuaJA29A34jxhzoSD8D=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczOerUVuCufvjwyu2VxnO0u_CyTIgx4M--dJKoDKp5SU1FiDUDUzawAOW6rpVzLhqxmv5LZx76xxolNGSqGbHhnIf0YGxwXMyfdeqvQUBvNi8thtP-kq=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczOjGNzNp_rbJt7I8QBkXxDfXGOliGUD9T13cZUynxx2thD_E1IprIJTr43tW7Qk7PCbFNYAAc67NIpvZa0OJ54XDA2bBFD3eS-DzL2SKixDQ82jOy8A=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczOT5Vt0x2kYjcX5LHSPEnZd0qwcTra_3LMvL2FSCmQomw0_Vi6SwWXq-0b7SL0fbKm80DO6TNfmvWETqgdLN7fWTO_o3OXXc4s9fIKWeaLsVdi5JZXH=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczNK7VrjKwn1kFCfqzOLvNxq5ujCtYf2yRY7JOayNkywLouvKnIlr8JppZ99AlPotF5zz6Lx718GbjU7dbgsXfoV90QJR1bHfUCEWtud3q59BEiC_VR5=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczO-Mc4lDRI8s69HBmMJdRv8BbVvzT3-UWNwCu_hLmPgF_XzuUYz-I9GDXp5lbET_7TK-Q00_DgXrvzmfxCF8uCmQosQFdCvmDqQQKM7Xqfvo0TmhHfK=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczPfHFgh5hevXlmpQuleEDseMBLJixSOdLnTRXKIaHNus2-n1uvAWz40wEgjWZsj01N6m4gBlKU5jiacoyANSJ5lbUBXQhwlsYoY3TYjTNMoVNy2dhXe=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczOtpZFw-a9K1nUNEz2-4Bn3ctbdCUwS1B7n0qUfH7-Av9w4eAY55P4LPpztp-blnYTFqQL0lRMF-Tbnz3WwGwGdtMz7d_Ti9Eu4T3shQMH7ImQ176ah=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczPeddoZjyYhVDlrGpI8UXMBsayDAKC3uPBgq3zu7w_Bc7stJ5JEz2VDwVsdc0s3UBm1YabWk9zxh2JSHIjH9IVX7nDmBNWsA4kdLXVQ4BWH-0uSl9dk=w1200',
+        'https://lh3.googleusercontent.com/pw/AP1GczMv0wId9YoYLceUK7GBW_cRT-HTZ4ZuPmyCj6GDm91qp-dUn6uovkdQCtO-fqjHmsCSNwka3pLrRmopdDCt9B0iAICHlr3yj0UDGT2LJjS7kJiXHJHD=w1200'
+      ]
     },
     {
       id: 'g2',

@@ -930,10 +930,43 @@ function updateGalleryCoverUrl(val){
   }
 }
 
-function addPhotoUrlToAlbum(){
+async function addPhotoUrlToAlbum(){
   const urlInp = document.getElementById('gNewPhotoUrl');
   if(!urlInp || !urlInp.value.trim()){ toast('กรุณาวางลิงก์ URL รูปภาพ', 'error'); return; }
   const rawText = urlInp.value.trim();
+
+  // Automatic Google Photos Shared Album Extractor
+  if(rawText.includes('photos.app.goo.gl') || rawText.includes('photos.google.com/share')){
+    toast('⏳ กำลังดึงรูปภาพทั้งหมดจาก Google Photos Album...', 'info');
+    try {
+      const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(rawText);
+      const res = await fetch(proxyUrl);
+      const data = await res.json();
+      const html = data.contents || '';
+      
+      const matches = html.match(/https:\/\/lh3\.googleusercontent\.com\/pw\/[A-Za-z0-9_\-]+/g) || 
+                      html.match(/https:\/\/lh3\.googleusercontent\.com\/[A-Za-z0-9_\-]+/g);
+
+      if(matches && matches.length) {
+        const unique = Array.from(new Set(matches)).filter(u => u.length > 50 && !u.includes('photo.jpg'));
+        let added = 0;
+        unique.forEach(u => {
+          const directUrl = u + '=w1200';
+          if(!tempGalleryPhotos.includes(directUrl)){
+            tempGalleryPhotos.push(directUrl);
+            added++;
+          }
+        });
+        if(!tempGalleryCover && tempGalleryPhotos.length) tempGalleryCover = tempGalleryPhotos[0];
+        urlInp.value = '';
+        renderAlbumPhotosAdmin();
+        toast(`🎉 ดึงรูปภาพสำเร็จ ${added} รูปจาก Google Photos Album!`);
+        return;
+      }
+    } catch(err) {
+      console.warn('Google Photos fetch error:', err);
+    }
+  }
 
   // Split by newlines, commas, or spaces to support pasting multiple photo links at once
   const urls = rawText.split(/[\n,\s]+/).map(u => u.trim()).filter(u => u.length > 5 && (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:image')));
