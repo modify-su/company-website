@@ -715,8 +715,7 @@ function editService(id){
   tempServiceImage = s.image || null;
   showModal(id?'แก้ไขข่าวสาร / บริการ':'เพิ่มข่าวสาร / บริการใหม่',`
     <div class="form-grid">
-      <div class="form-group"><label>ไอคอน (Emoji)</label><input type="text" id="sIcon" value="${esc(s.icon||'📰')}" placeholder="📰"></div>
-      <div class="form-group"><label>วันที่ประกาศข่าว</label><input type="text" id="sDate" value="${esc(s.date||'')}" placeholder="06 สิงหาคม 2569"></div>
+      <div class="form-group full"><label>วันที่ประกาศข่าว</label><input type="text" id="sDate" value="${esc(s.date||'')}" placeholder="06 สิงหาคม 2569"></div>
       <div class="form-group full"><label>หัวข้อข่าวสาร / บริการ *</label><input type="text" id="sTitle" value="${esc(s.title)}" placeholder="กรอกหัวข้อข่าวสาร"></div>
       <div class="form-group full"><label>คำอธิบายย่อ (แสดงบนการ์ด) *</label><textarea id="sDesc" rows="2">${esc(s.desc)}</textarea></div>
       <div class="form-group full"><label>เนื้อหาข่าวฉบับเต็ม (แสดงเมื่อคลิกอ่านข่าว)</label><textarea id="sFullText" rows="6" placeholder="กรอกเนื้อหาข่าว รายงานข่าว หรือรายละเอียดฉบับเต็มที่นี่...">${esc(s.fullText||'')}</textarea></div>
@@ -784,7 +783,7 @@ function saveService(id){
   const oldItem=index>=0?d.services[index]:{};
   const obj={
     id:id||uid(),
-    icon:document.getElementById('sIcon').value||'📰',
+    icon:document.getElementById('sIcon')?document.getElementById('sIcon').value:'📰',
     color:document.getElementById('sColor')?document.getElementById('sColor').value:'#7c3aed',
     title,
     desc:document.getElementById('sDesc').value.trim(),
