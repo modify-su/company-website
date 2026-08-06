@@ -810,8 +810,13 @@ function updateViewerContent() {
         <button class="photo-viewer-prev" onclick="prevViewerPhoto(event)">‹</button>
         <button class="photo-viewer-next" onclick="nextViewerPhoto(event)">›</button>
       ` : ''}
-      <img src="${currentSrc}" referrerpolicy="no-referrer" class="photo-viewer-img" alt="รูปที่ ${currentPhotoIdx+1}" />
-      <div class="photo-viewer-caption">
+      <img src="${currentSrc}" referrerpolicy="no-referrer" class="photo-viewer-img" alt="รูปที่ ${currentPhotoIdx+1}" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" />
+      <div style="display:none;background:#1e293b;padding:30px 40px;border-radius:12px;text-align:center;border:1px solid #334155">
+        <span style="font-size:2.5rem">🖼️</span>
+        <h4 style="color:#f87171;margin-top:10px;font-size:1.1rem">ไม่สามารถโหลดรูปภาพจากลิงก์นี้ได้</h4>
+        <p style="color:#cbd5e1;font-size:0.85rem;margin-top:6px;line-height:1.6">ลิงก์ที่นำมาวางเป็นลิงก์หน้าเว็บอัลบั้ม (เช่น photos.app.goo.gl หรือ facebook.com)<br><strong>วิธีแก้ไข:</strong> ให้คลิกขวาที่รูปภาพบนเว็บนั้น แล้วเลือก <strong style="color:#60a5fa">"คัดลอกที่อยู่อิเมจ" (Copy Image Address)</strong><br>หรืออัปโหลดไฟล์จากเครื่องคอมพิวเตอร์ผู้ดูแลระบบโดยตรงครับ</p>
+      </div>
+      <div class="photo-viewer-caption" style="margin-top:14px">
         <span>รูปที่ ${currentPhotoIdx+1} จาก ${total}</span>
       </div>
     </div>

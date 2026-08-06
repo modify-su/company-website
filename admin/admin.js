@@ -870,15 +870,20 @@ function editGalleryItem(id){
 
       <!-- Album Photo Collection -->
       <div class="form-group full" style="background:#f0f9ff;padding:16px;border-radius:10px;border:1px solid #bae6fd;margin-top:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <label style="font-weight:700;color:#0369a1">📸 รูปภาพทั้งหมดในอัลบั้มนี้ (<span id="photoCountLabel">${tempGalleryPhotos.length}</span> รูป)</label>
+        </div>
+
+        <div style="font-size:0.8rem;color:#334155;background:#e0f2fe;padding:8px 12px;border-radius:6px;margin-bottom:12px;line-height:1.4">
+          💡 <strong>เคล็ดลับการดึงลิงก์รูปภาพจาก Google Photos / Facebook:</strong><br>
+          ให้คลิกขวาที่รูปภาพ แล้วเลือก <strong style="color:#0284c7">"คัดลอกที่อยู่อิเมจ" (Copy Image Address)</strong> นำมาวางในช่องด้านล่างได้เลยครับ (สามารถวางหลายๆ ลิงก์พร้อมกันได้)
         </div>
 
         <div style="margin-bottom:10px;display:flex;gap:8px">
           <input type="file" id="gAddPhotoFile" accept="image/*" style="display:none">
-          <input type="text" id="gNewPhotoUrl" placeholder="วางลิงก์ URL รูปภาพ (Google Photos / Facebook) แล้วกดเพิ่ม" style="flex:1">
+          <input type="text" id="gNewPhotoUrl" placeholder="วางลิงก์ที่อยู่อิเมจ (Copy Image Address) แล้วกดเพิ่ม" style="flex:1">
           <button type="button" class="btn btn-secondary btn-sm" onclick="addPhotoUrlToAlbum()">+ เพิ่มด้วย URL</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('gAddPhotoFile').click()">💻 อัปโหลดจากเครื่อง</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('gAddPhotoFile').click()">💻 เลือกไฟล์จากเครื่อง</button>
         </div>
 
         <div id="albumPhotosList" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;max-height:240px;overflow-y:auto">
