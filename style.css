@@ -60,6 +60,9 @@ ul { list-style: none; }
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: inline-block;
+  padding: 4px 0;
+  line-height: 1.35;
 }
 .section-tag {
   display: inline-flex;
@@ -86,8 +89,10 @@ ul { list-style: none; }
 .section-title {
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.48;
   margin-bottom: 16px;
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 .section-subtitle {
   color: var(--text-muted);
@@ -348,11 +353,13 @@ canvas#particleCanvas { position: absolute; inset: 0; pointer-events: none; }
 }
 
 .hero-title {
-  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 900;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  line-height: 1.38;
+  letter-spacing: -0.01em;
   margin-bottom: 24px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   animation: fadeInUp 0.8s 0.2s ease both;
 }
 .hero-subtitle {
