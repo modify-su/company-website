@@ -663,7 +663,74 @@ function applyTestimonials(testimonials) {
     });
   }
 }
+// --- Apply Gallery (รวมภาพผลงาน) ---
+function applyGallery(gallery) {
+  const grid = document.getElementById('galleryGrid');
+  if(!grid) return;
+  const items = (gallery && gallery.length) ? gallery : [
+    { id: 'g1', title: 'ภาพกิจกรรมโครงการเกษตรดิจิทัล', date: '06 ส.ค. 2569', image: 'tech_banner_1.jpg', desc: 'บรรยากาศกิจกรรมการลงพื้นที่ส่งเสริมนวัตกรรมดิจิทัล' },
+    { id: 'g2', title: 'งานแสดงเทคโนโลยีและนวัตกรรมอาหารสัตว์', date: '05 ส.ค. 2569', image: 'tech_banner_2.jpg', desc: 'การจัดแสดงผลงานนวัตกรรมอาหารสัตว์ในระดับภูมิภาค' },
+    { id: 'g3', title: 'ภาพทีมงานและการลงพื้นที่ปฏิบัติงานจริง', date: '01 ส.ค. 2569', image: 'about_team.jpg', desc: 'ทีมงานผู้เชี่ยวชาญร่วมพัฒนาระบบร่วมกับชุมชนท้องถิ่น' }
+  ];
+  window._galleryData = items;
 
+  grid.innerHTML = items.map((item, idx) => `
+    <div class="gallery-card" onclick="openGalleryModal(${idx})">
+      <div class="gallery-img-box">
+        <img src="${item.image}" alt="${esc(item.title||'ภาพผลงาน')}" class="gallery-img" loading="lazy" />
+        <div class="gallery-overlay-icon">🔍</div>
+      </div>
+      ${(item.title || item.date) ? `
+        <div class="gallery-card-info">
+          ${item.title ? `<h4>${esc(item.title)}</h4>` : ''}
+          ${item.date ? `<span>📅 ${esc(item.date)}</span>` : ''}
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+}
+
+function openGalleryModal(idx) {
+  const items = window._galleryData || [];
+  const item = items[idx];
+  if(!item) return;
+
+  let overlay = document.getElementById('galleryLightBox');
+  if(!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'galleryLightBox';
+    overlay.className = 'news-detail-overlay';
+    document.body.appendChild(overlay);
+  }
+
+  overlay.innerHTML = `
+    <div class="news-detail-card" style="max-width:850px;padding:28px">
+      <button class="news-detail-close" onclick="closeGalleryModal()">✕</button>
+      <div style="border-radius:12px;overflow:hidden;max-height:70vh;background:#000;display:flex;align-items:center;justify-content:center">
+        <img src="${item.image}" alt="${esc(item.title||'')}" style="max-width:100%;max-height:70vh;object-fit:contain">
+      </div>
+      ${(item.title || item.desc || item.date) ? `
+        <div style="margin-top:18px">
+          ${item.title ? `<h3 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin-bottom:6px">${esc(item.title)}</h3>` : ''}
+          ${item.date ? `<span style="font-size:0.85rem;color:#64748b">📅 ${esc(item.date)}</span>` : ''}
+          ${item.desc ? `<p style="font-size:0.95rem;color:#334155;margin-top:10px;line-height:1.6">${esc(item.desc)}</p>` : ''}
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  overlay.onclick = (e) => {
+    if(e.target === overlay) closeGalleryModal();
+  };
+}
+
+function closeGalleryModal() {
+  const overlay = document.getElementById('galleryLightBox');
+  if(overlay) overlay.classList.remove('show');
+  document.body.style.overflow = '';
+}
 // --- Apply Custom Columns ---
 function applyColumns(columns) {
   if(!columns || !columns.length) return;
@@ -840,6 +907,7 @@ function loadSiteData() {
   if(data.slider) applySlider(data.slider);
   if(data.about) applyAbout(data.about);
   if(data.services) applyServices(data.services);
+  applyGallery(data.gallery);
   if(data.portfolio) applyPortfolio(data.portfolio, data.categories);
   if(data.team) applyTeam(data.team);
   if(data.testimonials) applyTestimonials(data.testimonials);

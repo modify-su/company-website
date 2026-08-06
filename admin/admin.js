@@ -165,7 +165,7 @@ function logout(){
    NAVIGATION
    ============================================================ */
 let currentSection='dashboard';
-const sectionTitles={dashboard:'Dashboard',logo:'โลโก้และแบรนด์',hero:'Hero Section',slider:'สไลด์ภาพ Banner',about:'เกี่ยวกับเรา',services:'บริการ',categories:'หมวดหมู่ผลงาน',portfolio:'ผลงาน',team:'ทีมงาน',testimonials:'รีวิวลูกค้า',columns:'คอลัมน์เนื้อหา',theme:'ธีมและสีเว็บไซต์',contact:'ข้อมูลติดต่อ'};
+const sectionTitles={dashboard:'Dashboard',logo:'โลโก้และแบรนด์',hero:'Hero Section',slider:'สไลด์ภาพ Banner',about:'เกี่ยวกับเรา',services:'ข่าวสารประชาสัมพันธ์',gallery:'รวมภาพผลงาน',team:'ทีมงาน',testimonials:'รีวิวลูกค้า',columns:'คอลัมน์เนื้อหา',theme:'ธีมและสีเว็บไซต์',contact:'ข้อมูลติดต่อ'};
 
 function showSection(id){
   currentSection=id;
@@ -176,7 +176,7 @@ function showSection(id){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const nav=document.querySelector(`[data-section="${id}"]`);
   if(nav) nav.classList.add('active');
-  const renders={dashboard:renderDashboard,logo:renderLogo,hero:renderHero,slider:renderSlider,about:renderAbout,services:renderServices,categories:renderCategories,portfolio:renderPortfolio,team:renderTeam,testimonials:renderTestimonials,columns:renderColumns,theme:renderTheme,contact:renderContact};
+  const renders={dashboard:renderDashboard,logo:renderLogo,hero:renderHero,slider:renderSlider,about:renderAbout,services:renderServices,gallery:renderGallery,team:renderTeam,testimonials:renderTestimonials,columns:renderColumns,theme:renderTheme,contact:renderContact};
   if(renders[id]) renders[id]();
 }
 
@@ -801,6 +801,135 @@ function saveService(id){
   saveData(d); closeModal(); renderServices(); toast(id?'แก้ไขข่าวสารสำเร็จ!':'เพิ่มข่าวสารสำเร็จ!');
 }
 function deleteService(id){ showConfirm('ต้องการลบข่าวสารนี้?',()=>{ const d=getData(); d.services=d.services.filter(x=>x.id!==id); saveData(d); closeConfirm(); renderServices(); toast('ลบข่าวสารแล้ว','warning'); }); }
+
+/* ============================================================
+   SECTION: GALLERY (รวมภาพผลงาน)
+   ============================================================ */
+let tempGalleryImage = null;
+
+function renderGallery(){
+  const d = getData();
+  if(!d.gallery) d.gallery = [];
+  document.getElementById('section-gallery').innerHTML = `
+    <div class="section-header">
+      <div><h2>รวมภาพผลงาน & กิจกรรม</h2><div class="sub">จัดการอัลบั้มภาพผลงานทั้งหมด (${d.gallery.length} ภาพ)</div></div>
+      <button class="btn btn-primary" onclick="editGalleryItem(null)">+ เพิ่มภาพผลงาน</button>
+    </div>
+    <div class="card" style="padding:0">
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>รูปภาพ</th><th>ชื่อภาพ / คำอธิบาย</th><th>วันที่</th><th>การจัดการ</th></tr></thead>
+          <tbody>
+            ${d.gallery.length===0?`<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">🖼️</div><p>ยังไม่มีภาพผลงาน กดเพิ่มภาพผลงานเลย!</p></div></td></tr>`:
+              d.gallery.map(g => `
+                <tr>
+                  <td><div class="item-thumb" style="width:60px;height:45px;border-radius:6px;overflow:hidden"><img src="${g.image}" style="width:100%;height:100%;object-fit:cover" alt=""></div></td>
+                  <td><strong>${esc(g.title||'ไม่มีชื่อภาพ')}</strong><div style="font-size:0.78rem;color:#64748b">${esc((g.desc||'').substring(0,50))}</div></td>
+                  <td><span class="badge badge-gray">${esc(g.date||'-')}</span></td>
+                  <td><div class="action-btns"><button class="btn btn-edit btn-sm" onclick="editGalleryItem('${g.id}')">✏️ แก้ไข</button><button class="btn btn-delete btn-sm" onclick="deleteGalleryItem('${g.id}')">🗑 ลบ</button></div></td>
+                </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function editGalleryItem(id){
+  const d = getData();
+  if(!d.gallery) d.gallery = [];
+  const g = id ? d.gallery.find(x => x.id === id) : { id: null, title: '', date: '', desc: '', image: '' };
+  if(!g) return;
+  tempGalleryImage = g.image || null;
+
+  showModal(id ? 'แก้ไขภาพผลงาน' : 'เพิ่มภาพผลงานใหม่', `
+    <div class="form-grid">
+      <div class="form-group full"><label>ชื่อภาพผลงาน / กิจกรรม</label><input type="text" id="gTitle" value="${esc(g.title||'')}" placeholder="เช่น ภาพกิจกรรมลงพื้นที่ส่งเสริมนวัตกรรม"></div>
+      <div class="form-group full"><label>วันที่กิจกรรม / ผลงาน</label><input type="text" id="gDate" value="${esc(g.date||'')}" placeholder="06 สิงหาคม 2569"></div>
+      <div class="form-group full"><label>คำอธิบายเพิ่มเติม</label><textarea id="gDesc" rows="3" placeholder="รายละเอียดภาพกิจกรรม...">${esc(g.desc||'')}</textarea></div>
+      
+      <div class="form-group full">
+        <label>เลือกรูปภาพผลงาน (เลือกได้ 2 วิธี)</label>
+
+        <div style="margin-bottom:12px">
+          <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:4px">🔗 วิธีที่ 1: วางลิงก์รูปภาพ (จาก Google Photos, Facebook Page หรือ URL รูปภาพ)</label>
+          <input type="text" id="gImgUrl" value="${esc(g.image||'')}" placeholder="https://... (วางลิงก์รูปภาพที่นี่)" oninput="updateGalleryImgUrl(this.value)">
+        </div>
+
+        <div>
+          <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:4px">💻 วิธีที่ 2: อัปโหลดรูปภาพจากเครื่องคอมพิวเตอร์ผู้ดูแลระบบ (Local Machine)</label>
+          <div class="upload-area" onclick="document.getElementById('gFile').click()" style="cursor:pointer">
+            <input type="file" id="gFile" accept="image/*" style="display:none">
+            <div class="up-icon">🖼️</div>
+            <div class="up-text">คลิกเพื่อเลือกไฟล์รูปภาพจากเครื่องผู้ดูแลระบบ</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <label style="font-size:0.82rem;color:var(--text-muted);display:block;margin-bottom:4px">🖼️ ตัวอย่างรูปภาพที่จะแสดง:</label>
+          <img id="gImgPrev" class="img-preview ${g.image?'show':''}" src="${g.image||''}" alt="preview" style="max-height:220px;border-radius:8px;object-fit:cover">
+        </div>
+      </div>
+    </div>`,
+    () => saveGalleryItem(id));
+
+  setupImageUpload('gFile', 'gImgPrev', img => {
+    tempGalleryImage = img;
+    const urlInp = document.getElementById('gImgUrl');
+    if(urlInp) urlInp.value = '';
+  });
+}
+
+function updateGalleryImgUrl(val){
+  const img = document.getElementById('gImgPrev');
+  if(img){
+    if(val && val.trim()){
+      img.src = val.trim();
+      img.classList.add('show');
+      tempGalleryImage = val.trim();
+    } else {
+      img.src = '';
+      img.classList.remove('show');
+      tempGalleryImage = null;
+    }
+  }
+}
+
+function saveGalleryItem(id){
+  const urlVal = document.getElementById('gImgUrl') ? document.getElementById('gImgUrl').value.trim() : '';
+  const finalImg = tempGalleryImage || urlVal;
+  if(!finalImg){ toast('กรุณาเลือกรูปภาพหรือวางลิงก์รูปภาพ', 'error'); return; }
+
+  const d = getData();
+  if(!d.gallery) d.gallery = [];
+  const index = id ? d.gallery.findIndex(x => x.id === id) : -1;
+
+  const obj = {
+    id: id || uid(),
+    title: document.getElementById('gTitle').value.trim(),
+    date: document.getElementById('gDate').value.trim(),
+    desc: document.getElementById('gDesc').value.trim(),
+    image: finalImg
+  };
+
+  if(index >= 0) d.gallery[index] = obj;
+  else d.gallery.push(obj);
+
+  saveData(d);
+  closeModal();
+  renderGallery();
+  toast(id ? 'แก้ไขภาพผลงานสำเร็จ!' : 'เพิ่มภาพผลงานสำเร็จ!');
+}
+
+function deleteGalleryItem(id){
+  showConfirm('ต้องการลบภาพผลงานนี้?', () => {
+    const d = getData();
+    if(d.gallery) d.gallery = d.gallery.filter(x => x.id !== id);
+    saveData(d);
+    closeConfirm();
+    renderGallery();
+    toast('ลบภาพผลงานเรียบร้อยแล้ว', 'warning');
+  });
+}
 
 /* ============================================================
    SECTION: CATEGORIES
