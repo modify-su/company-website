@@ -426,7 +426,25 @@ function renderHero(){
         <div class="form-group full"><label>คำอธิบาย (Subtitle)</label><textarea id="heroSub" rows="3">${esc(h.subtitle)}</textarea></div>
         <div class="form-group"><label>CTA ปุ่ม 1</label><input type="text" id="heroCta1" value="${esc(h.cta1||'ข่าวสาร และผลงาน')}"></div>
         <div class="form-group"><label>CTA ปุ่ม 2</label><input type="text" id="heroCta2" value="${esc(h.cta2||'ดูผลงาน')}"></div>
-        <div class="form-group full"><label>🎬 ลิงก์วิดีโอป๊อปอัปเมื่อกดปุ่ม "ดูผลงาน" (YouTube / Vimeo / MP4 URL)</label><input type="text" id="heroVideoUrl" value="${esc(h.videoUrl||'https://www.youtube.com/watch?v=dQw4w9WgXcQ')}" placeholder="https://www.youtube.com/watch?v=..."></div>
+        <div class="form-group full" style="background:#f8fafc;padding:16px;border-radius:10px;border:1px solid #e2e8f0;margin-top:10px">
+          <label style="font-weight:700;color:#0f172a;font-size:0.95rem">🎬 วิดีโอป๊อปอัปเมื่อกดปุ่ม "ดูผลงาน" (เลือกแนบได้ 2 วิธี)</label>
+          
+          <div style="margin-top:10px">
+            <label style="font-size:0.82rem;color:#64748b;display:block;margin-bottom:4px">🔗 วิธีที่ 1: วางลิงก์วิดีโอ (YouTube / Vimeo / MP4 URL)</label>
+            <input type="text" id="heroVideoUrl" value="${esc(h.videoUrl||'')}" placeholder="https://www.youtube.com/watch?v=... หรือลิงก์ไฟล์ MP4">
+          </div>
+
+          <div style="margin-top:12px">
+            <label style="font-size:0.82rem;color:#64748b;display:block;margin-bottom:4px">💻 วิธีที่ 2: อัปโหลด/แนบไฟล์วิดีโอจากเครื่องคอมพิวเตอร์ หรือ มือถือ (.mp4, .mov, .webm)</label>
+            <input type="file" id="heroVideoFile" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/*" style="display:none">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('heroVideoFile').click()">🎥 เลือกแนบไฟล์วิดีโอจากเครื่อง (Local Video File)</button>
+          </div>
+          
+          <div id="heroVideoInfo" style="margin-top:10px;display:${h.videoUrl ? 'block' : 'none'}">
+            <span style="font-size:0.8rem;color:#0284c7;font-weight:600">✅ วิดีโอที่ใช้อยู่ในขณะนี้:</span>
+            <div id="heroVideoPathText" style="font-size:0.78rem;color:#475569;word-break:break-all;background:#ffffff;padding:6px 10px;border-radius:6px;border:1px solid #cbd5e1;margin-top:4px">${esc(h.videoUrl||'')}</div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="card">
@@ -442,6 +460,28 @@ function renderHero(){
       </div>
       <div style="margin-top:16px"><button class="btn btn-primary" onclick="saveHero()">💾 บันทึก Hero Section</button></div>
     </div>`;
+
+  setTimeout(() => {
+    const heroVidInp = document.getElementById('heroVideoFile');
+    if(heroVidInp){
+      heroVidInp.addEventListener('change', () => {
+        const file = heroVidInp.files[0];
+        if(!file) return;
+        if(file.size > 80 * 1024 * 1024){ toast('ไฟล์วิดีโอใหญ่เกินไป (แนะนำไม่เกิน 80MB)', 'error'); return; }
+        toast('⏳ กำลังอัปโหลดและแนบไฟล์วิดีโอเข้าสู่ระบบ...', 'info');
+        const reader = new FileReader();
+        reader.onload = e => {
+          document.getElementById('heroVideoUrl').value = e.target.result;
+          const infoBox = document.getElementById('heroVideoInfo');
+          const pathText = document.getElementById('heroVideoPathText');
+          if(infoBox) infoBox.style.display = 'block';
+          if(pathText) pathText.textContent = `[ไฟล์วิดีโออัปโหลดจากเครื่อง] ${file.name} (${(file.size/(1024*1024)).toFixed(2)} MB)`;
+          toast(`🎉 แนบไฟล์วิดีโอ ${file.name} สำเร็จแล้ว! อย่าลืมกดบันทึกนะครับ`);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  }, 100);
 }
 function addHeroStat(){
   const d=getData(); d.hero.stats.push({num:0,unit:'+',label:'ชื่อสถิติ'}); saveData(d); renderHero();
