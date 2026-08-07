@@ -890,10 +890,19 @@ function closePhotoViewer() {
 }
 
 function getYouTubeId(url) {
-  if(!url) return null;
+  if (!url) return null;
+  const str = url.trim();
+  const shortsMatch = str.match(/\/shorts\/([a-zA-Z0-9_-]{11})/);
+  if (shortsMatch && shortsMatch[1]) return shortsMatch[1];
+  const youtuBeMatch = str.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+  if (youtuBeMatch && youtuBeMatch[1]) return youtuBeMatch[1];
+  const embedMatch = str.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
+  if (embedMatch && embedMatch[1]) return embedMatch[1];
+  const vMatch = str.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (vMatch && vMatch[1]) return vMatch[1];
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : null;
+  const match = str.match(regExp);
+  return (match && match[2] && match[2].length === 11) ? match[2] : null;
 }
 
 // --- Video Modal Handler (ป๊อปอัปวิดีโอตัวอย่างผลงาน) ---
@@ -917,19 +926,20 @@ function openVideoModal() {
 
   if(ytId) {
     extLink = `https://www.youtube.com/watch?v=${ytId}`;
-    const embedUrl = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=1&rel=0&playsinline=1`;
+    const embedUrl = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&enablejsapi=1&rel=0&playsinline=1`;
     embedHtml = `<iframe src="${embedUrl}" title="Video Preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width:100%;height:100%;border:0" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
   } else if(rawUrl.includes('vimeo.com')) {
     const videoId = rawUrl.split('vimeo.com/')[1].split('?')[0];
     extLink = rawUrl;
-    const embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1`;
+    const embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1`;
     embedHtml = `<iframe src="${embedUrl}" title="Video Preview" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
   } else if(rawUrl && (rawUrl.startsWith('data:video') || rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mov') || rawUrl.includes('blob:'))) {
-    embedHtml = `<video src="${rawUrl}" autoplay controls playsinline style="width:100%;height:100%;border-radius:12px;object-fit:cover"></video>`;
+    embedHtml = `<video src="${rawUrl}" autoplay muted controls playsinline style="width:100%;height:100%;border-radius:12px;object-fit:cover"></video>`;
   } else if(rawUrl) {
+    extLink = rawUrl;
     embedHtml = `<iframe src="${rawUrl}" title="Video Preview" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
   } else {
-    // If no video URL is provided yet, show a friendly fallback message & video upload prompt
+    // If no video URL is provided yet
     embedHtml = `
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#1e293b;color:#ffffff;text-align:center;padding:30px">
         <span style="font-size:3.5rem;margin-bottom:10px">🎬</span>
