@@ -898,7 +898,8 @@ function getYouTubeId(url) {
 
 // --- Video Modal Handler (ป๊อปอัปวิดีโอตัวอย่างผลงาน) ---
 function openVideoModal() {
-  const hero = window.CONFIG_DATA ? window.CONFIG_DATA.hero : {};
+  const siteData = getSiteData();
+  const hero = (siteData && siteData.hero) ? siteData.hero : (window.CONFIG_DATA ? window.CONFIG_DATA.hero : {});
   const rawUrl = (hero && hero.videoUrl) ? hero.videoUrl.trim() : '';
 
   let overlay = document.getElementById('videoModalOverlay');
