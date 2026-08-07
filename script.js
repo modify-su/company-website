@@ -892,6 +892,12 @@ function closePhotoViewer() {
 function getYouTubeId(url) {
   if (!url) return null;
   const str = url.trim();
+  if (str.startsWith('data:') || str.startsWith('blob:') || str.endsWith('.mp4') || str.endsWith('.webm') || str.endsWith('.mov')) {
+    return null;
+  }
+  if (!str.includes('youtube') && !str.includes('youtu.be')) {
+    return null;
+  }
   const shortsMatch = str.match(/\/shorts\/([a-zA-Z0-9_-]{11})/);
   if (shortsMatch && shortsMatch[1]) return shortsMatch[1];
   const youtuBeMatch = str.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
@@ -934,8 +940,8 @@ function openVideoModal() {
     extLink = rawUrl;
     const embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1`;
     embedHtml = `<iframe src="${embedUrl}" title="Video Preview" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
-  } else if(rawUrl && (rawUrl.startsWith('data:video') || rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mov') || rawUrl.includes('blob:'))) {
-    embedHtml = `<video src="${rawUrl}" autoplay muted controls playsinline style="width:100%;height:100%;border-radius:12px;object-fit:cover"></video>`;
+  } else if(rawUrl && (rawUrl.startsWith('data:') || rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mov') || rawUrl.includes('blob:'))) {
+    embedHtml = `<video src="${rawUrl}" autoplay muted controls playsinline style="width:100%;height:100%;border-radius:12px;object-fit:contain;background:#000000"></video>`;
   } else if(rawUrl) {
     extLink = rawUrl;
     embedHtml = `<iframe src="${rawUrl}" title="Video Preview" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
