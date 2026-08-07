@@ -909,7 +909,7 @@ function getYouTubeId(url) {
 function openVideoModal() {
   const siteData = getSiteData();
   const hero = (siteData && siteData.hero) ? siteData.hero : (window.CONFIG_DATA ? window.CONFIG_DATA.hero : {});
-  const rawUrl = (hero && hero.videoUrl) ? hero.videoUrl.trim() : '';
+  const rawUrl = (hero && hero.videoUrl) ? hero.videoUrl.trim() : 'https://youtube.com/shorts/ar3I7P2yyr0?si=i-8Iqtt5dUxvk7N0';
 
   let overlay = document.getElementById('videoModalOverlay');
   if(!overlay) {
@@ -923,6 +923,7 @@ function openVideoModal() {
   let extLink = '';
 
   const ytId = getYouTubeId(rawUrl);
+  const isShorts = rawUrl.includes('/shorts/');
 
   if(ytId) {
     extLink = `https://www.youtube.com/watch?v=${ytId}`;
@@ -949,16 +950,22 @@ function openVideoModal() {
     `;
   }
 
+  const containerStyle = isShorts
+    ? 'position:relative;width:100%;max-width:440px;margin:0 auto;aspect-ratio:9/16;border-radius:12px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.5)'
+    : 'position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.5)';
+
+  const cardMaxWidth = isShorts ? '520px' : '960px';
+
   overlay.innerHTML = `
-    <div class="news-detail-card" style="max-width:960px;padding:24px;background:#0f172a;border:1px solid #1e293b;border-radius:16px;color:#ffffff">
+    <div class="news-detail-card" style="max-width:${cardMaxWidth};padding:24px;background:#0f172a;border:1px solid #1e293b;border-radius:16px;color:#ffffff">
       <button class="news-detail-close" onclick="closeVideoModal()" style="color:#ffffff;background:rgba(255,255,255,0.2);top:16px;right:16px">✕</button>
 
       <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-        <span style="font-size:0.82rem;font-weight:700;background:rgba(124,58,237,0.3);color:#c084fc;padding:4px 12px;border-radius:100px;border:1px solid rgba(192,132,252,0.3)">🎬 วิดีโอแนะนำผลงาน & นวัตกรรม AWARIN ING.</span>
+        <span style="font-size:0.82rem;font-weight:700;background:rgba(124,58,237,0.3);color:#c084fc;padding:4px 12px;border-radius:100px;border:1px solid rgba(192,132,252,0.3)">🎬 วิดีโอผลงาน & นวัตกรรม AWARIN ING.</span>
         ${extLink ? `<a href="${extLink}" target="_blank" rel="noopener" style="font-size:0.8rem;color:#60a5fa;text-decoration:none;font-weight:600">🔗 เปิดดูบน YouTube ทันที ↗</a>` : ''}
       </div>
 
-      <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.5)">
+      <div style="${containerStyle}">
         ${embedHtml}
       </div>
     </div>
