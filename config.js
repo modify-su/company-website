@@ -338,7 +338,9 @@ window.CONFIG_DATA = {
     "address": "166/1-2 ถนนพรหมเทพ ตำบลในเมือง อำเภอเมืองสุรินทร์ จังหวัดสุรินทร์ 32000",
     "phone": "096-3952475",
     "email": "awarin.ing@gmail.com\nawarin.ing@hotmail.com",
-    "hours": "จันทร์ - อาทิตย์ เปิด 9.00 - 18.00 น."
+    "hours": "จันทร์ - อาทิตย์ เปิด 9.00 - 18.00 น.",
+    "mapUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3875.7277259163273!2d100.53696531483017!3d13.734689990358482!2m3!1f0!1f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30e29ed8b3687353%3A0xe541c49615a498b5!2sBangkok%2C%20Thailand!5e0!3m2!1sen!2sth!4v1620000000000!5m2!1sen!2sth",
+    "showMap": true
   },
   "slider": [
     {

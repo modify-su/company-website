@@ -1105,6 +1105,36 @@ function applyContact(contact) {
       if(p) p.innerHTML = fields[i].replace(/\n/g,'<br>');
     }
   });
+
+  // Dynamic Google Maps Embed & Visibility
+  const mapContainer = document.getElementById('contactMapContainer');
+  const mapIframe = document.getElementById('contactMapIframe');
+  const openMapBtn = document.getElementById('openGoogleMapsBtn');
+
+  if(mapContainer) {
+    if(contact.showMap === false) {
+      mapContainer.style.display = 'none';
+    } else {
+      mapContainer.style.display = 'block';
+    }
+  }
+
+  if(mapIframe && contact.mapUrl) {
+    let url = contact.mapUrl.trim();
+    if(url.includes('<iframe')) {
+      const match = url.match(/src=["']([^"']+)["']/);
+      if(match && match[1]) url = match[1];
+    }
+    if(url) mapIframe.src = url;
+
+    if(openMapBtn) {
+      if(url.startsWith('http') && !url.includes('embed')) {
+        openMapBtn.href = url;
+      } else {
+        openMapBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.address || 'Bangkok, Thailand')}`;
+      }
+    }
+  }
 }
 
 // --- Apply Theme & Colors ---

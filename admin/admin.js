@@ -1612,8 +1612,9 @@ function deleteColumn(id){ showConfirm('ต้องการลบคอลั�
    ============================================================ */
 function renderContact(){
   const d=getData(); const c=d.contact;
+  const defaultMap = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3875.7277259163273!2d100.53696531483017!3d13.734689990358482!2m3!1f0!1f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30e29ed8b3687353%3A0xe541c49615a498b5!2sBangkok%2C%20Thailand!5e0!3m2!1sen!2sth!4v1620000000000!5m2!1sen!2sth';
   document.getElementById('section-contact').innerHTML=`
-    <div class="section-header"><div><h2>ข้อมูลติดต่อ</h2><div class="sub">แก้ไขที่อยู่ เบอร์โทร และอีเมล</div></div></div>
+    <div class="section-header"><div><h2>ข้อมูลติดต่อ & แผนที่ตั้ง</h2><div class="sub">แก้ไขที่อยู่ เบอร์โทร อีเมล และแผนที่ตั้ง Google Maps</div></div></div>
     <div class="card">
       <div class="card-header"><div class="card-title"><span class="icon">📞</span>ข้อมูลการติดต่อ</div></div>
       <div class="form-grid">
@@ -1622,13 +1623,45 @@ function renderContact(){
         <div class="form-group"><label>อีเมล (แต่ละอีเมลแยกด้วย Enter)</label><textarea id="cEmail" rows="3">${esc(c.email)}</textarea></div>
         <div class="form-group full"><label>เวลาทำการ</label><textarea id="cHours" rows="3">${esc(c.hours)}</textarea></div>
       </div>
-      <div style="margin-top:20px"><button class="btn btn-primary" onclick="saveContact()">💾 บันทึกข้อมูลติดต่อ</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="icon">📍</span>แผนที่ตั้งบริษัท (Google Maps Location)</div></div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>ลิงก์แผนที่ฝัง Google Maps (Embed URL หรือโค้ด &lt;iframe&gt;)</label>
+          <textarea id="cMapUrl" rows="3" placeholder="วางลิงก์ https://www.google.com/maps/embed?pb=... หรือโค้ด <iframe ...>">${esc(c.mapUrl||defaultMap)}</textarea>
+          <div style="font-size:0.78rem;color:#64748b;margin-top:4px">
+            💡 <strong>วิธีเอาโค้ดแผนที่:</strong> เปิด Google Maps -> ค้นหาสถานที่ตั้งบริษัท -> กดปุ่ม "แชร์" (Share) -> เลือกแท็บ "ฝังแผนที่" (Embed a map) -> คัดลอกลิงก์หรือ HTML มาวางในช่องนี้ได้เลยครับ
+          </div>
+        </div>
+        <div class="form-group full">
+          <div class="toggle-wrap">
+            <label class="toggle"><input type="checkbox" id="cShowMap" ${c.showMap!==false?'checked':''}><span class="toggle-sl"></span></label>
+            <span class="toggle-label">แสดงกล่องแผนที่ในส่วนการติดต่อของเว็บไซต์</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:20px"><button class="btn btn-primary" onclick="saveContact()">💾 บันทึกข้อมูลติดต่อ & แผนที่</button></div>
     </div>`;
 }
+
 function saveContact(){
   const d=getData();
-  d.contact={address:document.getElementById('cAddr').value.trim(),phone:document.getElementById('cPhone').value.trim(),email:document.getElementById('cEmail').value.trim(),hours:document.getElementById('cHours').value.trim()};
-  saveData(d); toast('บันทึกข้อมูลติดต่อสำเร็จ! 🎉');
+  let mapUrlVal = document.getElementById('cMapUrl') ? document.getElementById('cMapUrl').value.trim() : '';
+  if(mapUrlVal.includes('<iframe')) {
+    const match = mapUrlVal.match(/src=["']([^"']+)["']/);
+    if(match && match[1]) mapUrlVal = match[1];
+  }
+  d.contact={
+    address:document.getElementById('cAddr').value.trim(),
+    phone:document.getElementById('cPhone').value.trim(),
+    email:document.getElementById('cEmail').value.trim(),
+    hours:document.getElementById('cHours').value.trim(),
+    mapUrl:mapUrlVal,
+    showMap:document.getElementById('cShowMap') ? document.getElementById('cShowMap').checked : true
+  };
+  saveData(d); toast('บันทึกข้อมูลติดต่อ & แผนที่สำเร็จ! 🎉');
 }
 
 /* ============================================================
