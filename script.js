@@ -993,13 +993,6 @@ function openVideoModal() {
   };
 }
 
-  overlay.classList.add('show');
-  document.body.style.overflow = 'hidden';
-  overlay.onclick = (e) => {
-    if(e.target === overlay) closeVideoModal();
-  };
-}
-
 function closeVideoModal() {
   const overlay = document.getElementById('videoModalOverlay');
   if(overlay) {
