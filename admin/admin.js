@@ -23,7 +23,7 @@ const DEFAULT_DATA = {
     badge:'นวัตกรรมเพื่ออนาคต',
     title1:'สร้างอนาคต', title2:'ทางการเกษตร และอาหารสัตว์', title3:'ไปกับเรา',
     subtitle:'เราคือพาร์ทเนอร์ด้านเทคโนโลยีที่ไว้ใจได้ พัฒนาซอฟต์แวร์ วางกลยุทธ์ดิจิทัล\nและสร้างโซลูชันที่ขับเคลื่อนธุรกิจของคุณสู่ความสำเร็จ',
-    cta1:'ดูบริการของเรา', cta2:'ดูผลงาน',
+    cta1:'ข่าวสาร และผลงาน', cta2:'ดูผลงาน',
     stats:[
       {num:150,unit:'+',label:'ลูกค้า'},{num:300,unit:'+',label:'โปรเจค'},
       {num:8,unit:'+',label:'ปีประสบการณ์'},{num:99,unit:'%',label:'ความพึงพอใจ'}
@@ -424,7 +424,7 @@ function renderHero(){
         <div class="form-group"><label>ชื่อบรรทัด 2 (Gradient)</label><input type="text" id="heroT2" value="${esc(h.title2)}"></div>
         <div class="form-group"><label>ชื่อบรรทัด 3</label><input type="text" id="heroT3" value="${esc(h.title3)}"></div>
         <div class="form-group full"><label>คำอธิบาย (Subtitle)</label><textarea id="heroSub" rows="3">${esc(h.subtitle)}</textarea></div>
-        <div class="form-group"><label>CTA ปุ่ม 1</label><input type="text" id="heroCta1" value="${esc(h.cta1||'ดูบริการของเรา')}"></div>
+        <div class="form-group"><label>CTA ปุ่ม 1</label><input type="text" id="heroCta1" value="${esc(h.cta1||'ข่าวสาร และผลงาน')}"></div>
         <div class="form-group"><label>CTA ปุ่ม 2</label><input type="text" id="heroCta2" value="${esc(h.cta2||'ดูผลงาน')}"></div>
       </div>
     </div>
@@ -1616,7 +1616,7 @@ function renderTheme(){
           นี่คือตัวอย่างการแสดงผลข้อความ ปุ่ม และ Gradient เมื่อนำไปใช้ในหน้าเว็บไซต์จริงของคุณ
         </p>
         <div style="display:flex;gap:12px">
-          <button id="prevBtn1" class="btn btn-primary">ดูบริการของเรา →</button>
+          <button id="prevBtn1" class="btn btn-primary">ข่าวสาร และผลงาน →</button>
           <button id="prevBtn2" class="btn btn-secondary">ติดต่อเรา</button>
         </div>
       </div>
