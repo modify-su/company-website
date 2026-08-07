@@ -14,6 +14,50 @@ let tempPortfolioImage = null;
 let tempTeamImage = null;
 let tempAboutImage = null;
 
+// --- IndexedDB Media Storage for Large Video Files (No 5MB quota limit) ---
+const MEDIA_DB_NAME = 'AwarinSiteMediaDB';
+const MEDIA_DB_STORE = 'videos';
+
+function openMediaDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(MEDIA_DB_NAME, 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(MEDIA_DB_STORE)) {
+        db.createObjectStore(MEDIA_DB_STORE);
+      }
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+
+async function saveVideoBlob(key, blob) {
+  try {
+    const db = await openMediaDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(MEDIA_DB_STORE, 'readwrite');
+      const store = tx.objectStore(MEDIA_DB_STORE);
+      const req = store.put(blob, key);
+      req.onsuccess = () => resolve(true);
+      req.onerror = e => reject(e.target.error);
+    });
+  } catch(e) { console.error('IndexedDB Save Error:', e); }
+}
+
+async function getVideoBlob(key) {
+  try {
+    const db = await openMediaDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(MEDIA_DB_STORE, 'readonly');
+      const store = tx.objectStore(MEDIA_DB_STORE);
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = e => reject(e.target.error);
+    });
+  } catch(e) { return null; }
+}
+
 /* ============================================================
    DEFAULT DATA
    ============================================================ */
@@ -464,21 +508,23 @@ function renderHero(){
   setTimeout(() => {
     const heroVidInp = document.getElementById('heroVideoFile');
     if(heroVidInp){
-      heroVidInp.addEventListener('change', () => {
+      heroVidInp.addEventListener('change', async () => {
         const file = heroVidInp.files[0];
         if(!file) return;
-        if(file.size > 80 * 1024 * 1024){ toast('ไฟล์วิดีโอใหญ่เกินไป (แนะนำไม่เกิน 80MB)', 'error'); return; }
-        toast('⏳ กำลังอัปโหลดและแนบไฟล์วิดีโอเข้าสู่ระบบ...', 'info');
-        const reader = new FileReader();
-        reader.onload = e => {
-          document.getElementById('heroVideoUrl').value = e.target.result;
-          const infoBox = document.getElementById('heroVideoInfo');
-          const pathText = document.getElementById('heroVideoPathText');
-          if(infoBox) infoBox.style.display = 'block';
-          if(pathText) pathText.textContent = `[ไฟล์วิดีโออัปโหลดจากเครื่อง] ${file.name} (${(file.size/(1024*1024)).toFixed(2)} MB)`;
-          toast(`🎉 แนบไฟล์วิดีโอ ${file.name} สำเร็จแล้ว! อย่าลืมกดบันทึกนะครับ`);
-        };
-        reader.readAsDataURL(file);
+        if(file.size > 200 * 1024 * 1024){ toast('ไฟล์วิดีโอใหญ่เกินไป (สูงสุด 200MB)', 'error'); return; }
+        toast(`⏳ กำลังบันทึกไฟล์วิดีโอ ${file.name} เข้าสู่ระบบ...`, 'info');
+        
+        await saveVideoBlob('hero_video_file', file);
+        
+        const videoMarker = `idb://hero_video_file#${file.name}`;
+        document.getElementById('heroVideoUrl').value = videoMarker;
+        
+        const infoBox = document.getElementById('heroVideoInfo');
+        const pathText = document.getElementById('heroVideoPathText');
+        if(infoBox) infoBox.style.display = 'block';
+        if(pathText) pathText.textContent = `[ไฟล์วิดีโออัปโหลดจากเครื่อง] ${file.name} (${(file.size/(1024*1024)).toFixed(2)} MB)`;
+        
+        toast(`🎉 แนบและบันทึกไฟล์วิดีโอ ${file.name} สำเร็จแล้ว! อย่าลืมกดปุ่มบันทึกนะครับ`);
       });
     }
   }, 100);

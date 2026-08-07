@@ -889,10 +889,41 @@ function closePhotoViewer() {
   if(viewer) viewer.classList.remove('show');
 }
 
+// --- IndexedDB Media Storage Reader ---
+const MEDIA_DB_NAME = 'AwarinSiteMediaDB';
+const MEDIA_DB_STORE = 'videos';
+
+function openMediaDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(MEDIA_DB_NAME, 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(MEDIA_DB_STORE)) {
+        db.createObjectStore(MEDIA_DB_STORE);
+      }
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+
+async function getVideoBlob(key) {
+  try {
+    const db = await openMediaDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(MEDIA_DB_STORE, 'readonly');
+      const store = tx.objectStore(MEDIA_DB_STORE);
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = e => reject(e.target.error);
+    });
+  } catch(e) { return null; }
+}
+
 function getYouTubeId(url) {
   if (!url) return null;
   const str = url.trim();
-  if (str.startsWith('data:') || str.startsWith('blob:') || str.endsWith('.mp4') || str.endsWith('.webm') || str.endsWith('.mov')) {
+  if (str.startsWith('idb://') || str.startsWith('data:') || str.startsWith('blob:') || str.endsWith('.mp4') || str.endsWith('.webm') || str.endsWith('.mov')) {
     return null;
   }
   if (!str.includes('youtube') && !str.includes('youtu.be')) {
@@ -912,14 +943,10 @@ function getYouTubeId(url) {
 }
 
 // --- Video Modal Handler (ป๊อปอัปวิดีโอตัวอย่างผลงาน) ---
-function openVideoModal() {
+async function openVideoModal() {
   const siteData = getSiteData();
   const hero = (siteData && siteData.hero) ? siteData.hero : (window.CONFIG_DATA ? window.CONFIG_DATA.hero : {});
-  const rawUrl = (hero && hero.videoUrl) ? hero.videoUrl.trim() : 'https://youtube.com/shorts/ar3I7P2yyr0?si=i-8Iqtt5dUxvk7N0';
-
-  const ytId = getYouTubeId(rawUrl);
-  const isLocalVideo = rawUrl && (rawUrl.startsWith('data:') || rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mov') || rawUrl.includes('blob:'));
-  const isShorts = rawUrl.includes('/shorts/');
+  let rawUrl = (hero && hero.videoUrl) ? hero.videoUrl.trim() : 'https://youtube.com/shorts/ar3I7P2yyr0?si=i-8Iqtt5dUxvk7N0';
 
   let overlay = document.getElementById('videoModalOverlay');
   if(!overlay) {
@@ -931,44 +958,62 @@ function openVideoModal() {
 
   let cardContentHtml = '';
 
-  if(isLocalVideo) {
-    // Local uploaded MP4 file -> Direct HTML5 Video Player
-    cardContentHtml = `
-      <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.5)">
-        <video src="${rawUrl}" autoplay muted controls playsinline style="width:100%;height:100%;object-fit:contain;background:#000000"></video>
-      </div>
-    `;
-  } else if(ytId) {
-    // YouTube / YouTube Shorts -> Sleek High-Res Thumbnail Player Card with Big Red Play Button
-    const ytWatchUrl = `https://www.youtube.com/watch?v=${ytId}`;
-    const ytThumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-
-    cardContentHtml = `
-      <div onclick="window.open('${ytWatchUrl}', '_blank')" style="cursor:pointer;position:relative;width:100%;aspect-ratio:${isShorts ? '9/16' : '16/9'};max-width:${isShorts ? '380px' : '100%'};margin:0 auto;border-radius:14px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.6);border:2px solid #334155;transition:transform 0.3s">
-        <img src="${ytThumb}" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.85);" alt="YouTube Video Thumbnail" />
-        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(15,23,42,0.85) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.4) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
-          <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg, #ef4444, #dc2626);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(239,68,68,0.6);margin-bottom:14px;transition:transform 0.2s">
-            <span style="font-size:2.2rem;color:#ffffff;margin-left:4px">▶</span>
-          </div>
-          <h3 style="font-size:1.1rem;font-weight:800;color:#ffffff;text-shadow:0 2px 4px rgba(0,0,0,0.8)">คลิกเพื่อรับชมวิดีโอผลงานบน YouTube</h3>
-          <span style="font-size:0.82rem;color:#cbd5e1;margin-top:6px;background:rgba(255,255,255,0.15);padding:4px 14px;border-radius:100px">🎬 ${isShorts ? 'YouTube Shorts' : 'YouTube Video'} ↗</span>
+  // Check IndexedDB video file
+  if(rawUrl.startsWith('idb://')) {
+    const key = rawUrl.split('idb://')[1].split('#')[0];
+    const blob = await getVideoBlob(key);
+    if(blob) {
+      const blobUrl = URL.createObjectURL(blob);
+      cardContentHtml = `
+        <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.5)">
+          <video src="${blobUrl}" autoplay muted controls playsinline style="width:100%;height:100%;object-fit:contain;background:#000000"></video>
         </div>
-      </div>
-    `;
-  } else if(rawUrl) {
-    cardContentHtml = `
-      <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.5)">
-        <iframe src="${rawUrl}" title="Video Preview" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe>
-      </div>
-    `;
-  } else {
-    cardContentHtml = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:280px;background:#1e293b;color:#ffffff;text-align:center;padding:30px;border-radius:12px">
-        <span style="font-size:3.5rem;margin-bottom:10px">🎬</span>
-        <h3 style="font-size:1.2rem;font-weight:700;color:#f1f5f9">ยังไม่ได้ตั้งค่าหรือแนบไฟล์วิดีโอผลงาน</h3>
-        <p style="font-size:0.88rem;color:#94a3b8;margin-top:6px;max-width:480px">ผู้ดูแลระบบสามารถวางลิงก์ YouTube / Vimeo หรืออัปโหลดไฟล์วิดีโอจากเครื่องคอมพิวเตอร์ได้ที่หน้าหลังบ้าน (Admin Panel)</p>
-      </div>
-    `;
+      `;
+    }
+  }
+
+  if(!cardContentHtml) {
+    const ytId = getYouTubeId(rawUrl);
+    const isLocalVideo = rawUrl && (rawUrl.startsWith('data:') || rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mov') || rawUrl.includes('blob:'));
+    const isShorts = rawUrl.includes('/shorts/');
+
+    if(isLocalVideo) {
+      cardContentHtml = `
+        <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.5)">
+          <video src="${rawUrl}" autoplay muted controls playsinline style="width:100%;height:100%;object-fit:contain;background:#000000"></video>
+        </div>
+      `;
+    } else if(ytId) {
+      const ytWatchUrl = `https://www.youtube.com/watch?v=${ytId}`;
+      const ytThumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+
+      cardContentHtml = `
+        <div onclick="window.open('${ytWatchUrl}', '_blank')" style="cursor:pointer;position:relative;width:100%;aspect-ratio:${isShorts ? '9/16' : '16/9'};max-width:${isShorts ? '380px' : '100%'};margin:0 auto;border-radius:14px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.6);border:2px solid #334155;transition:transform 0.3s">
+          <img src="${ytThumb}" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.85);" alt="YouTube Video Thumbnail" />
+          <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(15,23,42,0.85) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.4) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
+            <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg, #ef4444, #dc2626);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(239,68,68,0.6);margin-bottom:14px;transition:transform 0.2s">
+              <span style="font-size:2.2rem;color:#ffffff;margin-left:4px">▶</span>
+            </div>
+            <h3 style="font-size:1.1rem;font-weight:800;color:#ffffff;text-shadow:0 2px 4px rgba(0,0,0,0.8)">คลิกเพื่อรับชมวิดีโอผลงานบน YouTube</h3>
+            <span style="font-size:0.82rem;color:#cbd5e1;margin-top:6px;background:rgba(255,255,255,0.15);padding:4px 14px;border-radius:100px">🎬 ${isShorts ? 'YouTube Shorts' : 'YouTube Video'} ↗</span>
+          </div>
+        </div>
+      `;
+    } else if(rawUrl) {
+      cardContentHtml = `
+        <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.5)">
+          <iframe src="${rawUrl}" title="Video Preview" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe>
+        </div>
+      `;
+    } else {
+      cardContentHtml = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:280px;background:#1e293b;color:#ffffff;text-align:center;padding:30px;border-radius:12px">
+          <span style="font-size:3.5rem;margin-bottom:10px">🎬</span>
+          <h3 style="font-size:1.2rem;font-weight:700;color:#f1f5f9">ยังไม่ได้ตั้งค่าหรือแนบไฟล์วิดีโอผลงาน</h3>
+          <p style="font-size:0.88rem;color:#94a3b8;margin-top:6px;max-width:480px">ผู้ดูแลระบบสามารถวางลิงก์ YouTube / Vimeo หรืออัปโหลดไฟล์วิดีโอจากเครื่องคอมพิวเตอร์ได้ที่หน้าหลังบ้าน (Admin Panel)</p>
+        </div>
+      `;
+    }
   }
 
   const cardMaxWidth = (ytId && isShorts) ? '480px' : '920px';
