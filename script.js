@@ -888,6 +888,67 @@ function closePhotoViewer() {
   const viewer = document.getElementById('photoViewerLightbox');
   if(viewer) viewer.classList.remove('show');
 }
+
+// --- Video Modal Handler (ป๊อปอัปวิดีโอตัวอย่างผลงาน) ---
+function openVideoModal() {
+  const hero = window.CONFIG_DATA ? window.CONFIG_DATA.hero : {};
+  const rawUrl = (hero && hero.videoUrl) ? hero.videoUrl.trim() : 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+
+  let overlay = document.getElementById('videoModalOverlay');
+  if(!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'videoModalOverlay';
+    overlay.className = 'news-detail-overlay';
+    document.body.appendChild(overlay);
+  }
+
+  let embedHtml = '';
+  if(rawUrl.includes('youtube.com') || rawUrl.includes('youtu.be')) {
+    let videoId = 'dQw4w9WgXcQ';
+    if(rawUrl.includes('youtu.be/')) {
+      videoId = rawUrl.split('youtu.be/')[1].split('?')[0].split('&')[0];
+    } else if(rawUrl.includes('v=')) {
+      videoId = rawUrl.split('v=')[1].split('&')[0];
+    }
+    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1`;
+    embedHtml = `<iframe src="${embedUrl}" title="Video Preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
+  } else if(rawUrl.includes('vimeo.com')) {
+    const videoId = rawUrl.split('vimeo.com/')[1].split('?')[0];
+    const embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1`;
+    embedHtml = `<iframe src="${embedUrl}" title="Video Preview" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
+  } else {
+    embedHtml = `<video src="${rawUrl}" autoplay controls style="width:100%;height:100%;border-radius:12px;object-fit:cover"></video>`;
+  }
+
+  overlay.innerHTML = `
+    <div class="news-detail-card" style="max-width:960px;padding:24px;background:#0f172a;border:1px solid #1e293b;border-radius:16px;color:#ffffff">
+      <button class="news-detail-close" onclick="closeVideoModal()" style="color:#ffffff;background:rgba(255,255,255,0.2);top:16px;right:16px">✕</button>
+
+      <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:0.82rem;font-weight:700;background:rgba(124,58,237,0.3);color:#c084fc;padding:4px 12px;border-radius:100px;border:1px solid rgba(192,132,252,0.3)">🎬 วิดีโอแนะนำผลงาน & นวัตกรรม AWARIN ING.</span>
+      </div>
+
+      <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.5)">
+        ${embedHtml}
+      </div>
+    </div>
+  `;
+
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  overlay.onclick = (e) => {
+    if(e.target === overlay) closeVideoModal();
+  };
+}
+
+function closeVideoModal() {
+  const overlay = document.getElementById('videoModalOverlay');
+  if(overlay) {
+    overlay.classList.remove('show');
+    overlay.innerHTML = '';
+  }
+  document.body.style.overflow = '';
+}
 // --- Apply Custom Columns ---
 function applyColumns(columns) {
   if(!columns || !columns.length) return;

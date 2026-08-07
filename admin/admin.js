@@ -426,6 +426,7 @@ function renderHero(){
         <div class="form-group full"><label>คำอธิบาย (Subtitle)</label><textarea id="heroSub" rows="3">${esc(h.subtitle)}</textarea></div>
         <div class="form-group"><label>CTA ปุ่ม 1</label><input type="text" id="heroCta1" value="${esc(h.cta1||'ข่าวสาร และผลงาน')}"></div>
         <div class="form-group"><label>CTA ปุ่ม 2</label><input type="text" id="heroCta2" value="${esc(h.cta2||'ดูผลงาน')}"></div>
+        <div class="form-group full"><label>🎬 ลิงก์วิดีโอป๊อปอัปเมื่อกดปุ่ม "ดูผลงาน" (YouTube / Vimeo / MP4 URL)</label><input type="text" id="heroVideoUrl" value="${esc(h.videoUrl||'https://www.youtube.com/watch?v=dQw4w9WgXcQ')}" placeholder="https://www.youtube.com/watch?v=..."></div>
       </div>
     </div>
     <div class="card">
@@ -455,6 +456,7 @@ function saveHero(){
   d.hero.subtitle=document.getElementById('heroSub').value.trim();
   d.hero.cta1=document.getElementById('heroCta1').value.trim();
   d.hero.cta2=document.getElementById('heroCta2').value.trim();
+  d.hero.videoUrl=document.getElementById('heroVideoUrl').value.trim();
   d.hero.stats=(d.hero.stats||[]).map((_,i)=>({num:parseInt(document.getElementById(`sn_${i}`).value)||0,unit:document.getElementById(`su_${i}`).value,label:document.getElementById(`sl_${i}`).value}));
   saveData(d); toast('บันทึก Hero Section สำเร็จ! 🎉');
 }
