@@ -889,10 +889,17 @@ function closePhotoViewer() {
   if(viewer) viewer.classList.remove('show');
 }
 
+function getYouTubeId(url) {
+  if(!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
+
 // --- Video Modal Handler (ป๊อปอัปวิดีโอตัวอย่างผลงาน) ---
 function openVideoModal() {
   const hero = window.CONFIG_DATA ? window.CONFIG_DATA.hero : {};
-  const rawUrl = (hero && hero.videoUrl) ? hero.videoUrl.trim() : 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+  const rawUrl = (hero && hero.videoUrl) ? hero.videoUrl.trim() : '';
 
   let overlay = document.getElementById('videoModalOverlay');
   if(!overlay) {
@@ -903,29 +910,41 @@ function openVideoModal() {
   }
 
   let embedHtml = '';
-  if(rawUrl.includes('youtube.com') || rawUrl.includes('youtu.be')) {
-    let videoId = 'dQw4w9WgXcQ';
-    if(rawUrl.includes('youtu.be/')) {
-      videoId = rawUrl.split('youtu.be/')[1].split('?')[0].split('&')[0];
-    } else if(rawUrl.includes('v=')) {
-      videoId = rawUrl.split('v=')[1].split('&')[0];
-    }
-    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1`;
-    embedHtml = `<iframe src="${embedUrl}" title="Video Preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
+  let extLink = '';
+
+  const ytId = getYouTubeId(rawUrl);
+
+  if(ytId) {
+    extLink = `https://www.youtube.com/watch?v=${ytId}`;
+    const embedUrl = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=1&rel=0&playsinline=1`;
+    embedHtml = `<iframe src="${embedUrl}" title="Video Preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width:100%;height:100%;border:0" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
   } else if(rawUrl.includes('vimeo.com')) {
     const videoId = rawUrl.split('vimeo.com/')[1].split('?')[0];
+    extLink = rawUrl;
     const embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1`;
     embedHtml = `<iframe src="${embedUrl}" title="Video Preview" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
+  } else if(rawUrl && (rawUrl.startsWith('data:video') || rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mov') || rawUrl.includes('blob:'))) {
+    embedHtml = `<video src="${rawUrl}" autoplay controls playsinline style="width:100%;height:100%;border-radius:12px;object-fit:cover"></video>`;
+  } else if(rawUrl) {
+    embedHtml = `<iframe src="${rawUrl}" title="Video Preview" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
   } else {
-    embedHtml = `<video src="${rawUrl}" autoplay controls style="width:100%;height:100%;border-radius:12px;object-fit:cover"></video>`;
+    // If no video URL is provided yet, show a friendly fallback message & video upload prompt
+    embedHtml = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#1e293b;color:#ffffff;text-align:center;padding:30px">
+        <span style="font-size:3.5rem;margin-bottom:10px">🎬</span>
+        <h3 style="font-size:1.2rem;font-weight:700;color:#f1f5f9">ยังไม่ได้ตั้งค่าหรือแนบไฟล์วิดีโอผลงาน</h3>
+        <p style="font-size:0.88rem;color:#94a3b8;margin-top:6px;max-width:480px">ผู้ดูแลระบบสามารถวางลิงก์ YouTube / Vimeo หรืออัปโหลดไฟล์วิดีโอจากเครื่องคอมพิวเตอร์ได้ที่หน้าหลังบ้าน (Admin Panel)</p>
+      </div>
+    `;
   }
 
   overlay.innerHTML = `
     <div class="news-detail-card" style="max-width:960px;padding:24px;background:#0f172a;border:1px solid #1e293b;border-radius:16px;color:#ffffff">
       <button class="news-detail-close" onclick="closeVideoModal()" style="color:#ffffff;background:rgba(255,255,255,0.2);top:16px;right:16px">✕</button>
 
-      <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px">
+      <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
         <span style="font-size:0.82rem;font-weight:700;background:rgba(124,58,237,0.3);color:#c084fc;padding:4px 12px;border-radius:100px;border:1px solid rgba(192,132,252,0.3)">🎬 วิดีโอแนะนำผลงาน & นวัตกรรม AWARIN ING.</span>
+        ${extLink ? `<a href="${extLink}" target="_blank" rel="noopener" style="font-size:0.8rem;color:#60a5fa;text-decoration:none;font-weight:600">🔗 เปิดดูบน YouTube ทันที ↗</a>` : ''}
       </div>
 
       <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.5)">
