@@ -957,6 +957,9 @@ async function openVideoModal() {
   }
 
   let cardContentHtml = '';
+  const ytId = getYouTubeId(rawUrl);
+  const isShorts = rawUrl.includes('/shorts/');
+  const isLocalVideo = rawUrl && (rawUrl.startsWith('data:') || rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mov') || rawUrl.includes('blob:'));
 
   // Check IndexedDB video file
   if(rawUrl.startsWith('idb://')) {
@@ -973,10 +976,6 @@ async function openVideoModal() {
   }
 
   if(!cardContentHtml) {
-    const ytId = getYouTubeId(rawUrl);
-    const isLocalVideo = rawUrl && (rawUrl.startsWith('data:') || rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mov') || rawUrl.includes('blob:'));
-    const isShorts = rawUrl.includes('/shorts/');
-
     if(isLocalVideo) {
       cardContentHtml = `
         <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000000;box-shadow:0 20px 50px rgba(0,0,0,0.5)">
