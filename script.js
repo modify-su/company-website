@@ -432,8 +432,29 @@ function applyAbout(about) {
   }
   const award = document.querySelector('.about-card-1 strong');
   if(award && about.award) award.textContent = about.award;
-  const countries = document.querySelector('.about-card-2 strong');
-  if(countries && about.countries) countries.nextSibling && (document.querySelector('.about-card-2 span').textContent = `${about.countries} ประเทศ`);
+
+  const card2TitleEl = document.querySelector('.about-card-2 strong');
+  if(card2TitleEl && about.card2Title) {
+    card2TitleEl.textContent = about.card2Title;
+  }
+  
+  const card2SpanEl = document.querySelector('.about-card-2 span');
+  const card2IconEl = document.querySelector('.about-card-2 .about-card-icon');
+  if(card2SpanEl) {
+    const num = about.countries || '77';
+    const unitType = about.regionUnit || 'จังหวัด';
+    const unitText = (unitType === 'custom' || unitType === 'กำหนดเอง') ? (about.customUnit || '') : unitType;
+    card2SpanEl.textContent = `${num} ${unitText}`.trim();
+
+    if(card2IconEl) {
+      if(unitType === 'ประเทศ') card2IconEl.textContent = '🌏';
+      else if(unitType === 'จังหวัด') card2IconEl.textContent = '📍';
+      else if(unitType === 'ภูมิภาค') card2IconEl.textContent = '🗺️';
+      else if(unitType === 'สาขา') card2IconEl.textContent = '🏢';
+      else if(unitType === 'แห่ง') card2IconEl.textContent = '🏬';
+      else card2IconEl.textContent = '🌐';
+    }
+  }
   if(about.features && about.features.length) {
     const featContainer = document.querySelector('.about-features');
     if(featContainer) {

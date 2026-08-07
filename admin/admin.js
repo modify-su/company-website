@@ -76,7 +76,7 @@ const DEFAULT_DATA = {
   about:{
     title:'เราคือผู้สร้างนวัตกรรมดิจิทัล ทางการเกษตร และอาหารสัตว์',
     desc:'NexGen Solutions ก่อตั้งขึ้นในปี 2016 ด้วยพันธกิจในการช่วยให้ธุรกิจไทยและภูมิภาค สามารถแข่งขันในยุคดิจิทัลได้อย่างมั่นใจ เราผสมผสานความเชี่ยวชาญด้านเทคโนโลยี กับความเข้าใจธุรกิจอย่างลึกซึ้ง',
-    award:'Best Tech Startup 2024', countries:'15+',
+    award:'Best Tech Startup 2024', card2Title:'ให้บริการทั่วไทย', countries:'77', regionUnit:'จังหวัด', customUnit:'',
     textAlign:'center',
     layout:'horizontal',
     containerWidth:'standard',
@@ -678,12 +678,40 @@ function renderAbout(){
       <div class="form-grid">
         <div class="form-group full"><label>หัวข้อ</label><input type="text" id="aboutTitle" value="${esc(a.title)}"></div>
         <div class="form-group full"><label>คำอธิบาย</label><textarea id="aboutDesc" rows="4">${esc(a.desc)}</textarea></div>
-        <div class="form-group"><label>รางวัล</label><input type="text" id="aboutAward" value="${esc(a.award||'')}"></div>
-        <div class="form-group"><label>จำนวนประเทศ</label><input type="text" id="aboutCountries" value="${esc(a.countries||'')}"></div>
+        <div class="form-group full"><label>รางวัล / ความสำเร็จ (Card 1)</label><input type="text" id="aboutAward" value="${esc(a.award||'')}"></div>
         <div class="form-group full">
           <label>รูปภาพทีมงาน</label>
           <div class="upload-area"><input type="file" id="aboutFile" accept="image/*"><div class="up-icon">📷</div><div class="up-text">อัปโหลดรูปทีมงาน</div><div class="up-hint">JPG, PNG — สูงสุด 3MB</div></div>
           <img id="aboutImgPrev" class="img-preview ${a.image?'show':''}" src="${a.image||a.image===null?'about_team.jpg':''}" alt="preview">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="icon">📍</span>ข้อมูลพื้นที่ & ขอบเขตการให้บริการ (Card 2 Stats)</div></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>หัวข้อการ์ด (Card Title)</label>
+          <input type="text" id="aboutCard2Title" value="${esc(a.card2Title||'ให้บริการทั่วไทย')}" placeholder="เช่น ให้บริการทั่วไทย, ขอบเขตการให้บริการ">
+        </div>
+        <div class="form-group">
+          <label>จำนวน / ตัวเลข (Number / Stat)</label>
+          <input type="text" id="aboutCountries" value="${esc(a.countries||'77')}" placeholder="เช่น 77, 15+, 100">
+        </div>
+        <div class="form-group">
+          <label>เลือกหน่วยพื้นที่ / รูปแบบ (Unit Options)</label>
+          <select id="aboutRegionUnit" onchange="toggleCustomUnitInput()">
+            <option value="จังหวัด" ${(a.regionUnit==='จังหวัด'||!a.regionUnit)?'selected':''}>📍 จังหวัด (Provinces)</option>
+            <option value="ประเทศ" ${a.regionUnit==='ประเทศ'?'selected':''}>🌏 ประเทศ (Countries)</option>
+            <option value="ภูมิภาค" ${a.regionUnit==='ภูมิภาค'?'selected':''}>🗺️ ภูมิภาค (Regions)</option>
+            <option value="สาขา" ${a.regionUnit==='สาขา'?'selected':''}>🏢 สาขา (Branches)</option>
+            <option value="แห่ง" ${a.regionUnit==='แห่ง'?'selected':''}>🏬 แห่ง (Locations)</option>
+            <option value="custom" ${(a.regionUnit==='custom'||a.regionUnit==='กำหนดเอง')?'selected':''}>✍️ กำหนดหน่วยเอง (Custom Unit)</option>
+          </select>
+        </div>
+        <div class="form-group" id="customUnitGroup" style="display:${(a.regionUnit==='custom'||a.regionUnit==='กำหนดเอง')?'block':'none'}">
+          <label>พิมพ์หน่วยของคุณเอง (Custom Unit Text)</label>
+          <input type="text" id="aboutCustomUnit" value="${esc(a.customUnit||'')}" placeholder="เช่น โครงการ, ลูกค้า, ทั่วโลก">
         </div>
       </div>
     </div>
@@ -748,6 +776,14 @@ function renderAbout(){
     </div>`;
   setupImageUpload('aboutFile','aboutImgPrev',img=>{ tempAboutImage=img; });
 }
+function toggleCustomUnitInput() {
+  const select = document.getElementById('aboutRegionUnit');
+  const group = document.getElementById('customUnitGroup');
+  if (select && group) {
+    group.style.display = (select.value === 'custom' || select.value === 'กำหนดเอง') ? 'block' : 'none';
+  }
+}
+
 function addAboutFeature(){ const d=getData(); d.about.features.push({title:'',desc:''}); saveData(d); renderAbout(); }
 function removeAboutFeature(i){ const d=getData(); d.about.features.splice(i,1); saveData(d); renderAbout(); }
 function saveAbout(){
@@ -755,7 +791,10 @@ function saveAbout(){
   d.about.title=document.getElementById('aboutTitle').value.trim();
   d.about.desc=document.getElementById('aboutDesc').value.trim();
   d.about.award=document.getElementById('aboutAward').value.trim();
+  d.about.card2Title=document.getElementById('aboutCard2Title')?document.getElementById('aboutCard2Title').value.trim():'ให้บริการทั่วไทย';
   d.about.countries=document.getElementById('aboutCountries').value.trim();
+  d.about.regionUnit=document.getElementById('aboutRegionUnit')?document.getElementById('aboutRegionUnit').value:'จังหวัด';
+  d.about.customUnit=document.getElementById('aboutCustomUnit')?document.getElementById('aboutCustomUnit').value.trim():'';
   d.about.textAlign=document.getElementById('aboutAlign').value;
   d.about.colRatio=document.getElementById('aboutColRatio').value;
   d.about.layout=document.getElementById('aboutLayout').value;
