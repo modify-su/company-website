@@ -927,8 +927,8 @@ function openVideoModal() {
 
   if(ytId) {
     extLink = `https://www.youtube.com/watch?v=${ytId}`;
-    const embedUrl = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&enablejsapi=1&rel=0&playsinline=1`;
-    embedHtml = `<iframe src="${embedUrl}" title="Video Preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width:100%;height:100%;border:0" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+    const embedUrl = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=1&rel=0&playsinline=1`;
+    embedHtml = `<iframe src="${embedUrl}" title="Video Preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`;
   } else if(rawUrl.includes('vimeo.com')) {
     const videoId = rawUrl.split('vimeo.com/')[1].split('?')[0];
     extLink = rawUrl;
@@ -968,6 +968,14 @@ function openVideoModal() {
       <div style="${containerStyle}">
         ${embedHtml}
       </div>
+
+      ${ytId ? `
+        <div style="margin-top:16px;text-align:center">
+          <a href="${extLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#ffffff;font-size:0.88rem;font-weight:700;padding:10px 22px;border-radius:100px;text-decoration:none;box-shadow:0 4px 14px rgba(239,68,68,0.35);transition:transform 0.2s">
+            <span>▶ คลิกเปิดดูวิดีโอนี้บน YouTube โดยตรง ↗</span>
+          </a>
+        </div>
+      ` : ''}
     </div>
   `;
 
